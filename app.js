@@ -430,10 +430,12 @@ renderAll = function() {
 };
 
 // Cargar la data al iniciar si hay sesion
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Restauramos
     renderAll = __originalRender;
-    // La pagina carga protegida via supabase-client.js
-    // Si tenemos sesion y pasamos MFA, arrancamos el fetch:
-    loadDataFromSupabase();
+    // Evitar que tire error de carga si no hay sesión (ya que supabase-client te va a expulsar de todas formas)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        loadDataFromSupabase();
+    }
 });
