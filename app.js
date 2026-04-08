@@ -1,3 +1,4 @@
+const supabase = window.supabaseClient;
 let equipos = [];
 let colaboradores = [];
 let movimientos = [];
@@ -436,8 +437,6 @@ renderAll = function() {
 // Cargar la data al iniciar si hay sesion
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Restauramos
-        renderAll = __originalRender;
         // Evitar que tire error de carga si no hay sesión
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {

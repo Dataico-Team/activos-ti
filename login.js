@@ -1,3 +1,4 @@
+const supabase = window.supabaseClient;
 let globalFactorId = null;
 
 const loginForm = document.getElementById('loginForm');
