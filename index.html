@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activos TI Dataico</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">D</div>
+                <div>
+                    <h1>Activos TI</h1>
+                    <p>Dataico</p>
+                </div>
+            </div>
+
+            <nav class="menu">
+                <button class="menu-item active" data-view="dashboard">Dashboard</button>
+                <button class="menu-item" data-view="equipos">Equipos</button>
+                <button class="menu-item" data-view="asignaciones">Asignaciones</button>
+                <button class="menu-item" data-view="colaboradores">Colaboradores</button>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <div>
+                    <h2 id="viewTitle">Dashboard</h2>
+                    <p id="viewSubtitle">Control de equipos, colaboradores y asignaciones</p>
+                </div>
+                <div class="user-box">Usuario Dataico</div>
+            </header>
+
+            <section id="dashboardView" class="view active">
+                <div class="cards">
+                    <div class="card stat">
+                        <span>Equipos totales</span>
+                        <strong id="totalEquipos">0</strong>
+                    </div>
+                    <div class="card stat">
+                        <span>Disponibles</span>
+                        <strong id="totalDisponibles">0</strong>
+                    </div>
+                    <div class="card stat">
+                        <span>Asignados</span>
+                        <strong id="totalAsignados">0</strong>
+                    </div>
+                    <div class="card stat">
+                        <span>Rentados</span>
+                        <strong id="totalRentados">0</strong>
+                    </div>
+                </div>
+
+                <div class="grid two">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Equipos recientes</h3>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Marca</th>
+                                    <th>Modelo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="equiposRecentTable"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Últimos movimientos</h3>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Acción</th>
+                                    <th>Equipo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movimientosTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="equiposView" class="view">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="flex-grow: 1;">
+                        <input type="text" id="busquedaEquipoInput" placeholder="Buscar equipo por código o marca..." style="width: 100%; max-width: 400px; padding: 12px; border-radius: 10px; border: 1px solid #d1d5db;" />
+                    </div>
+                    <button id="btnOpenEquipoModal" class="btn-primary" style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px; line-height: 1;">+</span> Agregar
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Todos los equipos</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Origen</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Estado</th>
+                                <th>Asignado A</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equiposTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="asignacionesView" class="view">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="flex-grow: 1;">
+                        <input type="text" id="busquedaAsignacionInput" placeholder="Buscar asignación por colaborador o equipo..." style="width: 100%; max-width: 400px; padding: 12px; border-radius: 10px; border: 1px solid #d1d5db;" />
+                    </div>
+                    <button id="btnOpenAsignacionModal" class="btn-primary" style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px; line-height: 1;">+</span> Asignar
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Todas las asignaciones</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Colaborador</th>
+                                <th>Equipo</th>
+                                <th>Periféricos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="asignacionesTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="colaboradoresView" class="view">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="flex-grow: 1;">
+                        <input type="text" id="busquedaColaboradorInput" placeholder="Buscar colaborador por nombre..." style="width: 100%; max-width: 400px; padding: 12px; border-radius: 10px; border: 1px solid #d1d5db;" />
+                    </div>
+                    <button id="btnOpenColaboradorModal" class="btn-primary" style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px; line-height: 1;">+</span> Agregar
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Todos los colaboradores</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Área/Cargo</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="colaboradoresTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="equipoModal" class="modal hidden">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Crear equipo</h3>
+                <button id="btnCloseEquipoModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+            </div>
+            <form id="equipoForm" class="form">
+                <label>Origen</label>
+                <select id="origen" required>
+                    <option value="">Selecciona</option>
+                    <option value="Rentado">Rentado</option>
+                    <option value="Corporativo">Corporativo</option>
+                </select>
+
+                <div id="rentadoFields" class="hidden">
+                    <label>Número</label>
+                    <input type="number" id="numeroRentado" placeholder="Ej: 12" />
+                </div>
+
+                <div id="corporativoFields" class="hidden">
+                    <label>Nombre base</label>
+                    <input type="text" id="nombreBase" placeholder="Ej: MAC-PRO" />
+                </div>
+
+                <label>Código generado</label>
+                <input type="text" id="codigoGenerado" readonly />
+
+                <label>Marca</label>
+                <input type="text" id="marca" list="datalistMarcas" required placeholder="Ej: Lenovo" autocomplete="off" />
+
+                <label>Modelo</label>
+                <input type="text" id="modelo" list="datalistModelos" required placeholder="Ej: ThinkPad T14" autocomplete="off" />
+
+                <label>Serial</label>
+                <input type="text" id="serial" required placeholder="Ej: ABC123456" />
+
+                <label>Estado</label>
+                <select id="estado" required>
+                    <option value="Disponible">Disponible</option>
+                    <option value="Asignado">Asignado</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Baja">Baja</option>
+                </select>
+
+                <label>Observaciones</label>
+                <textarea id="observaciones" rows="3" placeholder="Notas del equipo"></textarea>
+
+                <button type="submit" class="btn-primary" style="margin-top: 16px; width: 100%;">Guardar equipo</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="asignacionModal" class="modal hidden">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Asignar equipo</h3>
+                <button id="btnCloseAsignacionModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+            </div>
+            <form id="asignacionForm" class="form">
+                <label>Colaborador</label>
+                <input type="text" id="colaborador" list="datalistColaboradores" placeholder="Escribe o selecciona un colaborador..." required autocomplete="off" />
+
+                <label>Equipo disponible</label>
+                <select id="equipoAsignar" required></select>
+
+                <label>Periféricos</label>
+                <div class="checks" style="background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 8px; margin-bottom: 16px;">
+                    <label><input type="checkbox" value="HUB USB" /> HUB USB</label>
+                    <label><input type="checkbox" value="Combo" /> Combo teclado/mouse/base</label>
+                    <label><input type="checkbox" value="Monitor" /> Monitor</label>
+                    <label><input type="checkbox" value="Diadema" /> Diadema</label>
+                    <label><input type="checkbox" value="Bolso" /> Bolso</label>
+                </div>
+
+                <label>Observación</label>
+                <textarea id="observacionAsignacion" rows="3"></textarea>
+
+                <button type="submit" class="btn-primary" style="margin-top: 16px; width: 100%;">Guardar asignación</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="colaboradorModal" class="modal hidden">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Agregar Colaborador</h3>
+                <button id="btnCloseColaboradorModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+            </div>
+            <form id="colaboradorForm" class="form">
+                <label>Nombre</label>
+                <input type="text" id="colNome" placeholder="Ej: Maria Gomez" required />
+
+                <label>Correo</label>
+                <input type="email" id="colCorreo" placeholder="Ej: maria@dataico.com" required />
+
+                <label>Área</label>
+                <input type="text" id="colArea" placeholder="Ej: Contabilidad" required />
+
+                <label>Cargo</label>
+                <input type="text" id="colCargo" placeholder="Ej: Analista" required />
+
+                <label>Estado</label>
+                <select id="colEstado" required>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+
+                <label>Observaciones</label>
+                <textarea id="colObservaciones" rows="3" placeholder="Información adicional"></textarea>
+
+                <button type="submit" class="btn-primary" style="margin-top: 16px; width: 100%;">Guardar colaborador</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="detalleColaboradorModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;" id="detalleColaboradorNombre">Detalle Colaborador</h3>
+                <button id="btnCloseDetalleColaboradorModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 20px; font-size: 14px;">
+                <p style="margin: 0 0 8px;"><strong>Correo:</strong> <span id="detalleColaboradorCorreo"></span></p>
+                <p style="margin: 0 0 8px;"><strong>Área / Cargo:</strong> <span id="detalleColaboradorAreaCargo"></span></p>
+                <p style="margin: 0 0 8px;"><strong>Estado:</strong> <span id="detalleColaboradorEstado"></span></p>
+                <p style="margin: 0;"><strong>Observaciones:</strong> <span id="detalleColaboradorObs"></span></p>
+            </div>
+
+            <h4 style="margin: 20px 0 10px; border-bottom: 1px solid #eef2f7; padding-bottom: 8px;">Equipos y Periféricos Asignados</h4>
+            <div id="detalleColaboradorEquipos" style="max-height: 250px; overflow-y: auto;">
+                <!-- Llenado por JS -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista global de autocompletado -->
+    <datalist id="datalistColaboradores"></datalist>
+    <datalist id="datalistMarcas"></datalist>
+    <datalist id="datalistModelos"></datalist>
+
+    <script src="app.js"></script>
+</body>
+</html>
