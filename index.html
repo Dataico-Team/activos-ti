@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         .conditional-input { margin-top: 10px; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -52,13 +53,13 @@
             </section>
 
             <section id="colaboradoresView" class="view">
-                <div class="topbar"><h3>Directorio</h3><button class="btn-primary" onclick="window.openModal('colaboradorModal')">+ Nuevo Colaborador</button></div>
+                <div class="topbar"><h3>Directorio de Personal</h3><button class="btn-primary" onclick="window.openModal('colaboradorModal')">+ Nuevo Colaborador</button></div>
                 <div class="card"><table><thead><tr><th>Nombre</th><th>Cargo</th><th>Área</th><th>Correo</th></tr></thead><tbody id="colaboradoresList"></tbody></table></div>
             </section>
         </main>
     </div>
 
-    <!-- MODAL EQUIPO (CATEGORIZADO) -->
+    <!-- MODAL EQUIPO -->
     <div id="equipoModal" class="modal hidden">
         <div class="modal-content">
             <h3>Registrar Equipo</h3>
@@ -116,7 +117,6 @@
         </div>
     </div>
 
-    <!-- MODAL COLABORADOR -->
     <div id="colaboradorModal" class="modal hidden">
         <div class="modal-content">
             <h3>Nuevo Colaborador</h3>
@@ -126,7 +126,7 @@
                 <input type="text" id="colArea" placeholder="Área" required>
                 <input type="email" id="colCorreo" placeholder="Correo" required>
                 <button type="submit" class="btn-primary">Registrar</button>
-                <button type="button" class="btn-primary" style="background:#6b7280;" onclick="window.closeModal('colaboradorModal')">X</button>
+                <button type="button" class="btn-primary" style="background:#6b7280;" onclick="window.closeModal('colaboradorModal')">Cerrar</button>
             </form>
         </div>
     </div>
@@ -136,7 +136,6 @@
         (function(){
             window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
             window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
-            
             const menuItems = document.querySelectorAll(".menu-item"), views = document.querySelectorAll(".view");
             menuItems.forEach(btn => {
                 btn.onclick = () => {
@@ -147,8 +146,6 @@
                     document.getElementById("viewTitle").textContent = btn.textContent;
                 };
             });
-
-            // Lógica Visibilidad Condicional (Monitor/Diadema)
             const chkM = document.getElementById("chkMonitor"), inM = document.getElementById("monitorInput");
             const chkD = document.getElementById("chkDiadema"), inD = document.getElementById("diademaInput");
             if(chkM) chkM.onchange = () => chkM.checked ? inM.classList.remove("hidden") : inM.classList.add("hidden");
@@ -170,35 +167,37 @@
             }
 
             async function loadData() {
-                const [rE, rCol, rAsi, rMov] = await Promise.all([
-                    supabase.from('equipos').select('*').order('created_at', {ascending:false}),
-                    supabase.from('colaboradores').select('*').order('created_at', {ascending:false}),
-                    supabase.from('asignaciones').select('*').order('created_at', {ascending:false}),
-                    supabase.from('movimientos').select('*').order('created_at', {ascending:false})
-                ]);
-                const eq = rE.data || [], col = rCol.data || [], asi = rAsi.data || [], mov = rM.data || [];
-                document.getElementById("totalEquipos").textContent = eq.length;
-                document.getElementById("disponibles").textContent = eq.filter(e => !e.asignado_a).length;
-                document.getElementById("asignadosCount").textContent = eq.filter(e => e.asignado_a).length;
+                try {
+                    const [rE, rCol, rAsi, rMov] = await Promise.all([
+                        supabase.from('equipos').select('*').order('created_at', {ascending:false}),
+                        supabase.from('colaboradores').select('*').order('created_at', {ascending:false}),
+                        supabase.from('asignaciones').select('*').order('created_at', {ascending:false}),
+                        supabase.from('movimientos').select('*').order('created_at', {ascending:false})
+                    ]);
+                    const eq = rE.data || [], col = rCol.data || [], asi = rAsi.data || [], mov = rMov.data || [];
+                    
+                    document.getElementById("totalEquipos").textContent = eq.length;
+                    document.getElementById("disponibles").textContent = eq.filter(e => !e.asignado_a).length;
+                    document.getElementById("asignadosCount").textContent = eq.filter(e => e.asignado_a).length;
 
-                const render = (id, d, f) => { const el = document.getElementById(id); if(el) el.innerHTML = d.map(f).join(''); };
-                render("recentEquipos", eq.slice(0,5), e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td><td>${e.estado}</td></tr>`);
-                render("movimientosList", mov.slice(0,5), m => `<tr><td>${new Date(m.created_at).toLocaleDateString()}</td><td>${m.accion}</td><td>${m.equipo}</td></tr>`);
-                render("equiposList", eq, e => `<tr><td>${e.codigo}</td><td>${e.tipo || 'Laptop'}</td><td>${e.marca}</td><td>${e.modelo}</td><td>${e.serial}</td><td>${e.estado}</td><td>${e.asignado_a || 'Disponible'}</td></tr>`);
-                render("asignacionesList", asi, a => {
-                    let perifs = [];
-                    if(a.mouse) perifs.push("🖱️"); if(a.teclado) perifs.push("⌨️");
-                    if(a.monitor_id) perifs.push(`🖥️ (ID:${a.monitor_id})`);
-                    if(a.diadema_id) perifs.push(`🎧 (ID:${a.diadema_id})`);
-                    return `<tr><td>${a.colaborador}</td><td>${a.equipo}</td><td>${new Date(a.fecha_asignacion).toLocaleDateString()}</td><td>${perifs.join(" ") || 'Ninguno'}</td></tr>`;
-                });
-                render("colaboradoresList", col, c => `<tr><td>${c.nombre}</td><td>${c.cargo}</td><td>${c.area}</td><td>${c.correo}</td></tr>`);
-                
-                const sel = document.getElementById("equipoAsignar");
-                if(sel) sel.innerHTML = '<option value="">Seleccione equipo...</option>' + eq.filter(e=>!e.asignado_a).map(e=>`<option value="${e.codigo}">${e.codigo}</option>`).join('');
+                    const render = (id, d, f) => { const el = document.getElementById(id); if(el) el.innerHTML = d.map(f).join(''); };
+                    render("recentEquipos", eq.slice(0,5), e => `<tr><td>${e.codigo}</td><td>${e.tipo || 'Laptop'}</td><td>${e.marca}</td><td>${e.estado}</td></tr>`);
+                    render("movimientosList", mov.slice(0,5), m => `<tr><td>${new Date(m.created_at).toLocaleDateString()}</td><td>${m.accion}</td><td>${m.equipo}</td></tr>`);
+                    render("equiposList", eq, e => `<tr><td>${e.codigo}</td><td>${e.tipo || 'Laptop'}</td><td>${e.marca}</td><td>${e.modelo}</td><td>${e.serial}</td><td>${e.estado}</td><td>${e.asignado_a || 'Disponible'}</td></tr>`);
+                    render("asignacionesList", asi, a => {
+                        let perifs = [];
+                        if(a.mouse) perifs.push("🖱️"); if(a.teclado) perifs.push("⌨️");
+                        if(a.monitor_id) perifs.push(`🖥️ (ID:${a.monitor_id})`);
+                        if(a.diadema_id) perifs.push(`🎧 (ID:${a.diadema_id})`);
+                        return `<tr><td>${a.colaborador}</td><td>${a.equipo}</td><td>${new Date(a.fecha_asignacion).toLocaleDateString()}</td><td>${perifs.join(" ") || 'Fijado'}</td></tr>`;
+                    });
+                    render("colaboradoresList", col, c => `<tr><td>${c.nombre}</td><td>${c.cargo}</td><td>${c.area}</td><td>${c.correo}</td></tr>`);
+                    
+                    const sel = document.getElementById("equipoAsignar");
+                    if(sel) sel.innerHTML = '<option value="">Seleccione equipo...</option>' + eq.filter(e=>!e.asignado_a).map(e=>`<option value="${e.codigo}">${e.codigo}</option>`).join('');
+                } catch(err) { console.error("Error cargando datos:", err); }
             }
 
-            // Lógica Form Equipo
             const org = document.getElementById("origen"), gen = document.getElementById("codigoGenerado"), num = document.getElementById("numeroRentado"), nom = document.getElementById("nombreBase");
             const up = () => {
                 if(org.value === 'Rentado') { 
@@ -209,16 +208,18 @@
                     gen.value = (nom.value || "").toUpperCase().replace(/\s+/g, '-');
                 }
             };
-            org.onchange = up; num.oninput = up; nom.oninput = up;
+            org.onchange = up; num.oninput = up; nom.oninput = up; up();
 
             document.getElementById("equipoForm").onsubmit = async (e) => {
                 e.preventDefault();
                 const d = { codigo: gen.value, tipo: document.getElementById("tipo").value, origen: org.value, marca: document.getElementById("marca").value, modelo: document.getElementById("modelo").value, serial: document.getElementById("serial").value, estado: document.getElementById("estado").value };
                 const { error } = await supabase.from('equipos').insert([d]);
-                if(!error){ await supabase.from('movimientos').insert([{accion:'CREACION', equipo: d.codigo}]); location.reload(); }
+                if(!error){ 
+                    await supabase.from('movimientos').insert([{accion:'CREACION', equipo: d.codigo}]); 
+                    location.reload(); 
+                } else alert("Error: " + error.message);
             };
 
-            // Lógica Form Asignación
             document.getElementById("asignacionForm").onsubmit = async (e) => {
                 e.preventDefault();
                 const eqId = document.getElementById("equipoAsignar").value, col = document.getElementById("colaborador").value;
