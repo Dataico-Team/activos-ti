@@ -41,6 +41,7 @@ async function logout() {
     try {
         await supabase.auth.signOut();
     } catch (e) {
+        alert("Fallo cerrando sesión: " + e.message);
         console.error("Error intentando cerrar sesión remota:", e);
     } finally {
         // Garantizar que la limpieza visual y redirección suceda sí o sí

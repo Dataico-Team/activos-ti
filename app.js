@@ -86,8 +86,8 @@ nombreBase.addEventListener("input", actualizarCodigo);
 const equipoForm = document.getElementById("equipoForm");
 equipoForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    const codigo = codigoGenerado.value.trim();
+    try {
+        const codigo = codigoGenerado.value.trim();
     const marca = document.getElementById("marca").value.trim();
     const modelo = document.getElementById("modelo").value.trim();
     const serial = document.getElementById("serial").value.trim();
@@ -128,6 +128,10 @@ equipoForm.addEventListener("submit", async (e) => {
     if (equipoModal) equipoModal.classList.add("hidden");
     
     await loadDataFromSupabase(); // Refrescar todo
+    } catch (globalFormError) {
+        alert("CRASH EN EL FORMULARIO: " + globalFormError.message);
+        console.error(globalFormError);
+    }
 });
 
 const asignacionForm = document.getElementById("asignacionForm");
@@ -431,11 +435,15 @@ renderAll = function() {
 
 // Cargar la data al iniciar si hay sesion
 document.addEventListener('DOMContentLoaded', async () => {
-    // Restauramos
-    renderAll = __originalRender;
-    // Evitar que tire error de carga si no hay sesión (ya que supabase-client te va a expulsar de todas formas)
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        loadDataFromSupabase();
+    try {
+        // Restauramos
+        renderAll = __originalRender;
+        // Evitar que tire error de carga si no hay sesión
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            loadDataFromSupabase();
+        }
+    } catch (fatalErr) {
+        alert("Falla crítica inicializando app.js: " + fatalErr.message);
     }
 });
