@@ -49,3 +49,8 @@ async function logout() {
         window.location.href = 'login.html';
     }
 }
+
+// Doble exportación al objeto window para máxima compatibilidad 
+// (cubre la versión handleLogout() que está en Vercel y logout() local)
+window.logout = logout;
+window.handleLogout = logout;
