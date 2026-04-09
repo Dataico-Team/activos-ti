@@ -17,46 +17,46 @@
     <div class="login-card">
         <div class="text-center" style="margin-bottom: 24px;">
             <div class="brand-logo" style="margin:0 auto 16px; width:64px; height:64px; border-radius:16px; background:#ff6b57; color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center;">D</div>
-            <h2 id="loginTitle">Iniciar Sesión</h2>
-            <p style="color:#6b7280; font-size:14px;">Ingresa con tu Correo o Usuario</p>
+            <h2 id="loginTitle">Gestión de Activos</h2>
+            <p id="loginSubtitle" style="color:#6b7280; font-size:14px;">Ingresa con tus credenciales</p>
         </div>
 
-        <!-- FORMULARIO 1: LOGIN -->
+        <!-- LOGIN PRINCIPAL -->
         <form id="loginForm" class="form">
             <label>Correo o Usuario</label>
-            <input type="text" id="userInput" required placeholder="ej: alejandro_ti o correo@abc.com">
+            <input type="text" id="userInput" required>
             <label>Contraseña</label>
             <input type="password" id="password" required>
-            <button type="submit" class="btn-primary" style="width:100%; background:#ff6b57; margin-top:10px;">Ingresar</button>
+            <button type="submit" class="btn-primary" style="width:100%; background:#ff6b57; margin-top:10px;">Entrar al Sistema</button>
         </form>
 
-        <!-- FORMULARIO 2: CAMBIO CLAVE OBLIGATORIO -->
+        <!-- CAMBIO DE CLAVE (Recuperación / Primer Ingreso) -->
         <div id="changePassSection" class="hidden">
-            <p style="color:#ef4444; font-weight:bold; margin-bottom:15px;">⚠️ Por seguridad, debes cambiar tu clave temporal.</p>
+            <p id="passMessage" style="color:#ef4444; font-weight:bold; margin-bottom:15px; font-size:14px;">Debes establecer una nueva contraseña segura.</p>
             <form id="changePassForm" class="form">
-                <label>Nueva Contraseña</label>
-                <input type="password" id="newPassword" required minlength="6">
-                <label>Confirmar Contraseña</label>
-                <input type="password" id="confirmPassword" required minlength="6">
-                <button type="submit" class="btn-primary" style="width:100%;">Actualizar Contraseña</button>
+                <input type="password" id="newPassword" placeholder="Nueva Contraseña" required minlength="6">
+                <input type="password" id="confirmPassword" placeholder="Confirmar Contraseña" required minlength="6">
+                <button type="submit" class="btn-primary" style="width:100%;">Actualizar y Acceder</button>
             </form>
         </div>
 
-        <!-- FORMULARIO 3: ACTIVAR 2FA (QR) -->
+        <!-- SETUP MFA (QR) -->
         <div id="setupMfaSection" class="hidden text-center">
-            <h3>Activar Google Authenticator</h3>
-            <canvas id="qrImage" style="margin: 0 auto 15px;"></canvas>
+            <h3 style="font-size:18px;">Vincular Google Authenticator</h3>
+            <canvas id="qrImage" style="margin: 15px auto;"></canvas>
             <form id="setupMfaForm" class="form">
-                <input type="text" id="setupMfaCode" required placeholder="6 dígitos" style="text-align:center;">
-                <button type="submit" class="btn-primary" style="width:100%;">Activar y Acceder</button>
+                <label style="font-size:12px; color:#6b7280;">Ingresa el código de 6 dígitos de la App</label>
+                <input type="text" id="setupMfaCode" required maxlength="6" style="text-align:center; font-size:24px; letter-spacing:4px;">
+                <button type="submit" class="btn-primary" style="width:100%;">Validar y Entrar</button>
             </form>
         </div>
 
-        <!-- FORMULARIO 4: VERIFICAR 2FA RECURRENTE -->
+        <!-- VERIFICACIÓN MFA -->
         <div id="mfaSection" class="hidden text-center">
-            <h3>Verificación 2FA</h3>
+            <h3>Verificación de Identidad</h3>
+            <p style="font-size:14px; color:#6b7280;">Ingresa el código de tu Authenticator</p>
             <form id="mfaForm" class="form">
-                <input type="text" id="mfaCode" required placeholder="000 000" style="text-align:center;">
+                <input type="text" id="mfaCode" required maxlength="6" style="text-align:center; font-size:24px; letter-spacing:4px;">
                 <button type="submit" class="btn-primary" style="width:100%;">Verificar</button>
             </form>
         </div>
@@ -69,33 +69,38 @@
             const supabase = window.supabase.createClient(sURL, sKEY);
             let gFactorId = null;
 
+            // Detectar si venimos de un correo de recuperación
+            const hash = window.location.hash;
+            if (hash && hash.includes("type=recovery")) {
+                showSection('changePassSection');
+                document.getElementById('passMessage').textContent = "🔄 Restaurando contraseña desde correo...";
+            }
+
             document.getElementById('loginForm').onsubmit = async (e) => {
                 e.preventDefault();
-                let userVal = document.getElementById('userInput').value;
-                const password = document.getElementById('password').value;
+                let uVal = document.getElementById('userInput').value;
+                const pass = document.getElementById('password').value;
 
-                // Bypass admin
-                if(userVal === 'admin' && password === '123') {
+                if(uVal === 'admin' && pass === '123') {
                     localStorage.setItem('test_bypass', 'true');
                     location.href = 'index.html'; return;
                 }
 
-                let finalEmail = userVal;
-                // Si no tiene @, es un nombre de usuario: buscar el correo asociado
-                if (!userVal.includes('@')) {
-                    const { data: profile, error: pErr } = await supabase.from('perfiles').select('email').eq('usuario', userVal).single();
-                    if (pErr || !profile) return alert("Nombre de usuario no encontrado.");
-                    finalEmail = profile.email;
+                let finalEmail = uVal;
+                if (!uVal.includes('@')) {
+                    const { data: p, error: pe } = await supabase.from('perfiles').select('email').eq('usuario', uVal).single();
+                    if (pe || !p) return alert("Usuario no encontrado.");
+                    finalEmail = p.email;
                 }
 
-                const { data, error } = await supabase.auth.signInWithPassword({ email: finalEmail, password });
-                if(error) return alert("Error de acceso: " + error.message);
+                const { data, error } = await supabase.auth.signInWithPassword({ email: finalEmail, password: pass });
+                if(error) return alert("Acceso denegado: " + error.message);
                 handleSecurityFlow(data.session);
             };
 
             async function handleSecurityFlow(session) {
-                const { data: profile } = await supabase.from('perfiles').select('debe_cambiar_clave').eq('id', session.user.id).single();
-                if (profile && profile.debe_cambiar_clave) { showSection('changePassSection'); return; }
+                const { data: prof } = await supabase.from('perfiles').select('debe_cambiar_clave').eq('id', session.user.id).single();
+                if (prof && prof.debe_cambiar_clave) { showSection('changePassSection'); return; }
 
                 const { data: mfa } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
                 if (mfa.nextLevel === 'aal2' && mfa.currentLevel === 'aal1') { showSection('mfaSection'); }
@@ -113,11 +118,14 @@
 
             document.getElementById('changePassForm').onsubmit = async (e) => {
                 e.preventDefault();
-                const newP = document.getElementById('newPassword').value;
-                const { error } = await supabase.auth.updateUser({ password: newP });
+                const np = document.getElementById('newPassword').value;
+                const { error } = await supabase.auth.updateUser({ password: np });
                 if(error) return alert(error.message);
-                const user = (await supabase.auth.getUser()).data.user;
-                await supabase.from('perfiles').update({ debe_cambiar_clave: false }).eq('id', user.id);
+                
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) await supabase.from('perfiles').update({ debe_cambiar_clave: false }).eq('id', user.id);
+                
+                alert("¡Contraseña actualizada!");
                 location.reload();
             };
 
@@ -131,8 +139,9 @@
             document.getElementById('setupMfaForm').onsubmit = async (e) => {
                 e.preventDefault();
                 const code = document.getElementById('setupMfaCode').value;
-                const chall = await supabase.auth.mfa.challenge({ factorId: gFactorId });
-                await supabase.auth.mfa.verify({ factorId: gFactorId, challengeId: chall.data.id, code });
+                const { data: cData } = await supabase.auth.mfa.challenge({ factorId: gFactorId });
+                const { error } = await supabase.auth.mfa.verify({ factorId: gFactorId, challengeId: cData.id, code });
+                if(error) return alert("Código inválido");
                 location.href = 'index.html';
             };
 
@@ -141,8 +150,9 @@
                 const code = document.getElementById('mfaCode').value;
                 const { data: factors } = await supabase.auth.mfa.listFactors();
                 const factor = factors.all[0];
-                const chall = await supabase.auth.mfa.challenge({ factorId: factor.id });
-                await supabase.auth.mfa.verify({ factorId: factor.id, challengeId: chall.data.id, code });
+                const { data: cData } = await supabase.auth.mfa.challenge({ factorId: factor.id });
+                const { error } = await supabase.auth.mfa.verify({ factorId: factor.id, challengeId: cData.id, code });
+                if(error) return alert("Código incorrecto");
                 location.href = 'index.html';
             };
         })();
