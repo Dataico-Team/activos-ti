@@ -136,7 +136,7 @@
             const supabase = window.supabase.createClient(sURL, sKEY);
             window.logout = async () => { await supabase.auth.signOut(); localStorage.clear(); location.href = 'login.html'; };
 
-            // VERIFICACIÓN DE JERARQUÍA
+            // VERIFICACIÓN DE JERARQUÍA Y SEGURIDAD (MFA BLINDADO)
             const checkPermissions = async () => {
                 if (localStorage.getItem('test_bypass') === 'true') {
                     document.body.classList.add('is-admin', 'authenticated');
@@ -146,6 +146,14 @@
                     const { data: { session } } = await supabase.auth.getSession();
                     if (!session) { location.href = 'login.html'; return; }
                     
+                    // ESCUDO MFA: Verificamos si ya cumplió con el 2FA
+                    const { data: mfa } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+                    if (mfa.nextLevel === 'aal2' && mfa.currentLevel === 'aal1') {
+                        // El usuario TIENE MFA pero no lo ha verificado. Expulsar al login.
+                        location.href = 'login.html';
+                        return;
+                    }
+
                     const { data: prof } = await supabase.from('perfiles').select('es_super_admin').eq('id', session.user.id).single();
                     if (prof && prof.es_super_admin) document.body.classList.add('is-admin');
                     

@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Seguro - Activos TI</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- QR Code Library Cargada Primero -->
     <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #f3f4f6; margin: 0; }
         .login-card { width: 100%; max-width: 400px; padding: 32px; background: #fff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
         .text-center { text-align: center; }
+        .secret-box { font-family: monospace; background: #f9fafb; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px; margin: 10px 0; font-size: 14px; word-break: break-all; }
     </style>
 </head>
 <body>
@@ -18,43 +20,42 @@
         <div class="text-center" style="margin-bottom: 24px;">
             <div class="brand-logo" style="margin:0 auto 16px; width:64px; height:64px; border-radius:16px; background:#ff6b57; color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center;">D</div>
             <h2 id="loginTitle">Gestión de Activos</h2>
-            <p id="loginSubtitle" style="color:#6b7280; font-size:14px;">Ingresa con tus credenciales</p>
+            <p id="loginSubtitle" style="color:#6b7280; font-size:14px;">Ingresa tus credenciales</p>
         </div>
 
-        <!-- LOGIN PRINCIPAL -->
         <form id="loginForm" class="form">
             <label>Correo o Usuario</label>
             <input type="text" id="userInput" required>
             <label>Contraseña</label>
             <input type="password" id="password" required>
-            <button type="submit" class="btn-primary" style="width:100%; background:#ff6b57; margin-top:10px;">Entrar al Sistema</button>
+            <button type="submit" class="btn-primary" style="width:100%; background:#ff6b57; margin-top:10px;">Entrar</button>
         </form>
 
-        <!-- CAMBIO DE CLAVE (Recuperación / Primer Ingreso) -->
         <div id="changePassSection" class="hidden">
-            <p id="passMessage" style="color:#ef4444; font-weight:bold; margin-bottom:15px; font-size:14px;">Debes establecer una nueva contraseña segura.</p>
+            <p id="passMessage" style="color:#ef4444; font-weight:bold; margin-bottom:15px; font-size:14px;">🛠️ Seguridad Activada: Debes actualizar tu contraseña.</p>
             <form id="changePassForm" class="form">
                 <input type="password" id="newPassword" placeholder="Nueva Contraseña" required minlength="6">
                 <input type="password" id="confirmPassword" placeholder="Confirmar Contraseña" required minlength="6">
-                <button type="submit" class="btn-primary" style="width:100%;">Actualizar y Acceder</button>
+                <button type="submit" class="btn-primary" style="width:100%;">Cambiar y Seguir</button>
             </form>
         </div>
 
-        <!-- SETUP MFA (QR) -->
         <div id="setupMfaSection" class="hidden text-center">
             <h3 style="font-size:18px;">Vincular Google Authenticator</h3>
-            <canvas id="qrImage" style="margin: 15px auto;"></canvas>
+            <p style="font-size:13px; color:#4b5563;">Escanea el código QR desde tu celular:</p>
+            <!-- Usamos imagen directa para estirilidad total -->
+            <div style="background: white; padding: 10px; display: inline-block; border-radius: 8px; margin: 15px auto; border: 1px solid #ddd;">
+                <img id="qrImage" style="display: block; width: 200px; height: 200px;" alt="Código QR de Seguridad">
+            </div>
             <form id="setupMfaForm" class="form">
-                <label style="font-size:12px; color:#6b7280;">Ingresa el código de 6 dígitos de la App</label>
-                <input type="text" id="setupMfaCode" required maxlength="6" style="text-align:center; font-size:24px; letter-spacing:4px;">
-                <button type="submit" class="btn-primary" style="width:100%;">Validar y Entrar</button>
+                <input type="text" id="setupMfaCode" required maxlength="6" style="text-align:center; font-size:24px; letter-spacing:4px;" placeholder="000000">
+                <button type="submit" class="btn-primary" style="width:100%;">Confirmar Vinculación</button>
             </form>
         </div>
 
-        <!-- VERIFICACIÓN MFA -->
         <div id="mfaSection" class="hidden text-center">
-            <h3>Verificación de Identidad</h3>
-            <p style="font-size:14px; color:#6b7280;">Ingresa el código de tu Authenticator</p>
+            <h3>Verificación 2FA</h3>
+            <p style="font-size:14px; color:#6b7280;">Ingresa el código de 6 dígitos:</p>
             <form id="mfaForm" class="form">
                 <input type="text" id="mfaCode" required maxlength="6" style="text-align:center; font-size:24px; letter-spacing:4px;">
                 <button type="submit" class="btn-primary" style="width:100%;">Verificar</button>
@@ -69,12 +70,15 @@
             const supabase = window.supabase.createClient(sURL, sKEY);
             let gFactorId = null;
 
-            // Detectar si venimos de un correo de recuperación
-            const hash = window.location.hash;
-            if (hash && hash.includes("type=recovery")) {
-                showSection('changePassSection');
-                document.getElementById('passMessage').textContent = "🔄 Restaurando contraseña desde correo...";
-            }
+            // DETECCIÓN ROBUSTA DE RECUPERACIÓN / SESIÓN
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    showSection('changePassSection');
+                    document.getElementById('passMessage').textContent = "🔄 Restaurando contraseña desde correo...";
+                } else if (event === 'SIGNED_IN' && session) {
+                    handleSecurityFlow(session);
+                }
+            });
 
             document.getElementById('loginForm').onsubmit = async (e) => {
                 e.preventDefault();
@@ -94,8 +98,8 @@
                 }
 
                 const { data, error } = await supabase.auth.signInWithPassword({ email: finalEmail, password: pass });
-                if(error) return alert("Acceso denegado: " + error.message);
-                handleSecurityFlow(data.session);
+                if(error) return alert("Error: " + error.message);
+                // Si llegamos aquí sin errores, onAuthStateChange se encargará del resto
             };
 
             async function handleSecurityFlow(session) {
@@ -118,6 +122,9 @@
 
             document.getElementById('changePassForm').onsubmit = async (e) => {
                 e.preventDefault();
+                if(document.getElementById('newPassword').value !== document.getElementById('confirmPassword').value) {
+                    return alert("Las contraseñas no coinciden.");
+                }
                 const np = document.getElementById('newPassword').value;
                 const { error } = await supabase.auth.updateUser({ password: np });
                 if(error) return alert(error.message);
@@ -125,23 +132,50 @@
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) await supabase.from('perfiles').update({ debe_cambiar_clave: false }).eq('id', user.id);
                 
-                alert("¡Contraseña actualizada!");
+                alert("¡Contraseña actualizada! Verifica ahora tu Authenticator.");
                 location.reload();
             };
 
             async function enrollMFA() {
-                showSection('setupMfaSection');
-                const { data } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
-                gFactorId = data.id;
-                QRCode.toCanvas(document.getElementById('qrImage'), data.totp.uri);
+                try {
+                    showSection('setupMfaSection');
+                    
+                    // LIMPIEZA AGRESIVA: Borramos CUALQUIER factor previo (verificado o no) para resetear el acceso
+                    const { data: listData } = await supabase.auth.mfa.listFactors();
+                    if (listData && listData.all.length > 0) {
+                        for (const factor of listData.all) {
+                            await supabase.auth.mfa.unenroll({ factorId: factor.id });
+                        }
+                        // Pequeña espera para que Supabase procese la limpieza
+                        await new Promise(r => setTimeout(r, 500));
+                    }
+
+                    const { data, error } = await supabase.auth.mfa.enroll({ 
+                        factorType: 'totp',
+                        issuer: 'Activos TI Dataico',
+                        friendlyName: (await supabase.auth.getUser()).data.user.email
+                    });
+                    if (error) throw error;
+                    
+                    gFactorId = data.id;
+                    const uri = data.totp.uri;
+
+                    // Mostrar QR usando la API infalible
+                    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(uri)}`;
+                    document.getElementById('qrImage').src = qrApiUrl;
+                    
+                } catch (err) {
+                    alert("Error al iniciar 2FA: " + err.message);
+                }
             }
 
             document.getElementById('setupMfaForm').onsubmit = async (e) => {
                 e.preventDefault();
                 const code = document.getElementById('setupMfaCode').value;
-                const { data: cData } = await supabase.auth.mfa.challenge({ factorId: gFactorId });
+                const { data: cData, error: cErr } = await supabase.auth.mfa.challenge({ factorId: gFactorId });
+                if(cErr) return alert(cErr.message);
                 const { error } = await supabase.auth.mfa.verify({ factorId: gFactorId, challengeId: cData.id, code });
-                if(error) return alert("Código inválido");
+                if(error) return alert("Código inválido. Revisa tu aplicación.");
                 location.href = 'index.html';
             };
 
@@ -150,9 +184,10 @@
                 const code = document.getElementById('mfaCode').value;
                 const { data: factors } = await supabase.auth.mfa.listFactors();
                 const factor = factors.all[0];
-                const { data: cData } = await supabase.auth.mfa.challenge({ factorId: factor.id });
+                const { data: cData, error: cErr } = await supabase.auth.mfa.challenge({ factorId: factor.id });
+                if(cErr) return alert(cErr.message);
                 const { error } = await supabase.auth.mfa.verify({ factorId: factor.id, challengeId: cData.id, code });
-                if(error) return alert("Código incorrecto");
+                if(error) return alert("Código incorrecto.");
                 location.href = 'index.html';
             };
         })();
