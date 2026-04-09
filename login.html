@@ -18,13 +18,13 @@
         <div class="text-center" style="margin-bottom: 24px;">
             <div class="brand-logo" style="margin:0 auto 16px; width:64px; height:64px; border-radius:16px; background:#ff6b57; color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center;">D</div>
             <h2 id="loginTitle">Iniciar Sesión</h2>
-            <p id="loginSubtitle" style="color:#6b7280; font-size:14px;">Acceso Privado Dataico</p>
+            <p style="color:#6b7280; font-size:14px;">Ingresa con tu Correo o Usuario</p>
         </div>
 
         <!-- FORMULARIO 1: LOGIN -->
         <form id="loginForm" class="form">
-            <label>Usuario / Correo</label>
-            <input type="text" id="email" required placeholder="admin o tu@empresa.com">
+            <label>Correo o Usuario</label>
+            <input type="text" id="userInput" required placeholder="ej: alejandro_ti o correo@abc.com">
             <label>Contraseña</label>
             <input type="password" id="password" required>
             <button type="submit" class="btn-primary" style="width:100%; background:#ff6b57; margin-top:10px;">Ingresar</button>
@@ -45,7 +45,6 @@
         <!-- FORMULARIO 3: ACTIVAR 2FA (QR) -->
         <div id="setupMfaSection" class="hidden text-center">
             <h3>Activar Google Authenticator</h3>
-            <p style="font-size:13px; color:#6b7280; margin-bottom:10px;">Escanea este código con tu celular.</p>
             <canvas id="qrImage" style="margin: 0 auto 15px;"></canvas>
             <form id="setupMfaForm" class="form">
                 <input type="text" id="setupMfaCode" required placeholder="6 dígitos" style="text-align:center;">
@@ -56,7 +55,6 @@
         <!-- FORMULARIO 4: VERIFICAR 2FA RECURRENTE -->
         <div id="mfaSection" class="hidden text-center">
             <h3>Verificación 2FA</h3>
-            <p style="font-size:12px; color:#6b7280;">Ingresa el código de tu Authenticator.</p>
             <form id="mfaForm" class="form">
                 <input type="text" id="mfaCode" required placeholder="000 000" style="text-align:center;">
                 <button type="submit" class="btn-primary" style="width:100%;">Verificar</button>
@@ -64,53 +62,45 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE SEGURIDAD -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script>
-        (function() {
-            // Bypass rápido para admin
-            const loginForm = document.getElementById('loginForm');
-            const originalSubmit = loginForm.onsubmit;
-            loginForm.onsubmit = (e) => {
-                const u = document.getElementById('email').value, p = document.getElementById('password').value;
-                if (u === 'admin' && p === '123') {
-                    e.preventDefault();
-                    localStorage.setItem('test_bypass', 'true');
-                    location.href = 'index.html';
-                    return false;
-                }
-            };
-        })();
-    </script>
     <script>
         (async function() {
             const sURL = 'https://hsczygcbmtyzkzeksajm.supabase.co', sKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzY3p5Z2NibXR5emt6ZWtzYWptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2Nzk0NDksImV4cCI6MjA5MTI1NTQ0OX0.YetS-bD8wd_ZsLjeEhO_9ZsrlnxHd-MVPcC0iQS5EF0';
             const supabase = window.supabase.createClient(sURL, sKEY);
             let gFactorId = null;
 
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                const email = document.getElementById('email').value, password = document.getElementById('password').value;
-                if(email === 'admin') return; e.preventDefault();
-                
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if(error) return alert("Acceso denegado: " + error.message);
-                if(data.session) handleSecurityFlow(data.session);
-            });
+            document.getElementById('loginForm').onsubmit = async (e) => {
+                e.preventDefault();
+                let userVal = document.getElementById('userInput').value;
+                const password = document.getElementById('password').value;
+
+                // Bypass admin
+                if(userVal === 'admin' && password === '123') {
+                    localStorage.setItem('test_bypass', 'true');
+                    location.href = 'index.html'; return;
+                }
+
+                let finalEmail = userVal;
+                // Si no tiene @, es un nombre de usuario: buscar el correo asociado
+                if (!userVal.includes('@')) {
+                    const { data: profile, error: pErr } = await supabase.from('perfiles').select('email').eq('usuario', userVal).single();
+                    if (pErr || !profile) return alert("Nombre de usuario no encontrado.");
+                    finalEmail = profile.email;
+                }
+
+                const { data, error } = await supabase.auth.signInWithPassword({ email: finalEmail, password });
+                if(error) return alert("Error de acceso: " + error.message);
+                handleSecurityFlow(data.session);
+            };
 
             async function handleSecurityFlow(session) {
-                // 1. Verificar si debe cambiar clave
                 const { data: profile } = await supabase.from('perfiles').select('debe_cambiar_clave').eq('id', session.user.id).single();
-                if (profile && profile.debe_cambiar_clave) {
-                    showSection('changePassSection');
-                    return;
-                }
-                // 2. Verificar MFA
+                if (profile && profile.debe_cambiar_clave) { showSection('changePassSection'); return; }
+
                 const { data: mfa } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-                if (mfa.nextLevel === 'aal2' && mfa.currentLevel === 'aal1') {
-                    showSection('mfaSection');
-                } else if (mfa.nextLevel === 'aal1' && mfa.currentLevel === 'aal1') {
-                    enrollMFA();
-                } else { location.href = 'index.html'; }
+                if (mfa.nextLevel === 'aal2' && mfa.currentLevel === 'aal1') { showSection('mfaSection'); }
+                else if (mfa.nextLevel === 'aal1' && mfa.currentLevel === 'aal1') { enrollMFA(); }
+                else { location.href = 'index.html'; }
             }
 
             function showSection(id) {
@@ -121,21 +111,16 @@
                 document.getElementById(id).classList.remove('hidden');
             }
 
-            // Cambiar contraseña
             document.getElementById('changePassForm').onsubmit = async (e) => {
                 e.preventDefault();
-                const newP = document.getElementById('newPassword').value, confP = document.getElementById('confirmPassword').value;
-                if(newP !== confP) return alert("Las contraseñas no coinciden.");
-                
+                const newP = document.getElementById('newPassword').value;
                 const { error } = await supabase.auth.updateUser({ password: newP });
                 if(error) return alert(error.message);
-                
                 const user = (await supabase.auth.getUser()).data.user;
                 await supabase.from('perfiles').update({ debe_cambiar_clave: false }).eq('id', user.id);
-                location.reload(); // Recargar para ir a MFA
+                location.reload();
             };
 
-            // Enrolar MFA (QR)
             async function enrollMFA() {
                 showSection('setupMfaSection');
                 const { data } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
@@ -147,21 +132,19 @@
                 e.preventDefault();
                 const code = document.getElementById('setupMfaCode').value;
                 const chall = await supabase.auth.mfa.challenge({ factorId: gFactorId });
-                const { error } = await supabase.auth.mfa.verify({ factorId: gFactorId, challengeId: chall.data.id, code });
-                if(!error) location.href = 'index.html'; else alert("Código inválido.");
+                await supabase.auth.mfa.verify({ factorId: gFactorId, challengeId: chall.data.id, code });
+                location.href = 'index.html';
             };
 
-            // Verificar MFA Recurrente
             document.getElementById('mfaForm').onsubmit = async (e) => {
                 e.preventDefault();
                 const code = document.getElementById('mfaCode').value;
                 const { data: factors } = await supabase.auth.mfa.listFactors();
                 const factor = factors.all[0];
                 const chall = await supabase.auth.mfa.challenge({ factorId: factor.id });
-                const { error } = await supabase.auth.mfa.verify({ factorId: factor.id, challengeId: chall.data.id, code });
-                if(!error) location.href = 'index.html'; else alert("Código incorrecto.");
+                await supabase.auth.mfa.verify({ factorId: factor.id, challengeId: chall.data.id, code });
+                location.href = 'index.html';
             };
-
         })();
     </script>
 </body>

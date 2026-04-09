@@ -35,7 +35,6 @@
                 </div>
             </header>
 
-            <!-- VISTAS ESTÁNDAR -->
             <section id="dashboardView" class="view active">
                 <div class="cards">
                     <div class="card stat"><span>Equipos totales</span><strong id="totalEquipos">0</strong></div>
@@ -63,37 +62,36 @@
                 <div class="card"><table><thead><tr><th>Nombre</th><th>Cargo</th><th>Área</th><th>Correo</th></tr></thead><tbody id="colaboradoresList"></tbody></table></div>
             </section>
 
-            <!-- VISTA PRIVADA: GESTIÓN DE USUARIOS -->
             <section id="usuariosView" class="view">
                 <div class="topbar"><h3>Gestión de Accesos (Admin)</h3><button class="btn-primary" onclick="window.openModal('usuarioModal')">+ Crear Nuevo Usuario</button></div>
                 <div class="card">
-                    <p style="padding:15px; background:#fffca5; border-radius:8px; margin-bottom:15px; font-size:14px;">Solo tú puedes crear usuarios. Al crear uno, se generará una clave temporal que el empleado deberá cambiar al entrar.</p>
-                    <table><thead><tr><th>Correo</th><th>Estado Acceso</th><th>Debe cambiar clave</th></tr></thead><tbody id="usuariosList"></tbody></table>
+                    <p style="padding:15px; background:#fffca5; border-radius:8px; margin-bottom:15px; font-size:14px;">Solo tú puedes crear usuarios. El "Usuario" será opcional para ingresar sin usar el correo.</p>
+                    <table><thead><tr><th>Usuario</th><th>Correo</th><th>Debe cambiar clave</th></tr></thead><tbody id="usuariosList"></tbody></table>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- MODALES EXISTENTES -->
-    <div id="equipoModal" class="modal hidden"><div class="modal-content"><h3>Registrar Equipo</h3><form id="equipoForm" class="form"><label>Tipo</label><select id="tipo"><option value="Laptop">Laptop</option><option value="Celular">Celular</option><option value="Diadema">Diadema</option><option value="Monitor">Monitor</option></select><label>Origen</label><select id="origen"><option value="Corporativo">Corporativo</option><option value="Rentado">Rentado</option></select><div id="rentadoFields" class="hidden"><label>Consecutivo</label><input type="text" id="numeroRentado"></div><div id="corporativoFields"><label>Identificador</label><input type="text" id="nombreBase"></div><label>Código Final</label><input type="text" id="codigoGenerado" readonly><input type="text" id="marca" placeholder="Marca" required><input type="text" id="modelo" placeholder="Modelo" required><input type="text" id="serial" placeholder="Serial" required><select id="estado"><option value="Bueno">Bueno</option></select><button type="submit" class="btn-primary">Guardar</button></form></div></div>
+    <!-- MODALES -->
+    <div id="equipoModal" class="modal hidden"><div class="modal-content"><h3>Registrar Equipo</h3><form id="equipoForm" class="form"><label>Tipo</label><select id="tipo"><option value="Laptop">Laptop</option><option value="Celular">Celular</option><option value="Diadema">Diadema</option><option value="Monitor">Monitor</option></select><label>Origen</label><select id="origen"><option value="Corporativo">Corporativo</option><option value="Rentado">Rentado</option></select><div id="rentadoFields" class="hidden"><label>Consecutivo</label><input type="text" id="numeroRentado"></div><div id="corporativoFields"><label>Identificador</label><input type="text" id="nombreBase"></div><label>Código Final</label><input type="text" id="codigoGenerado" readonly><input type="text" id="marca" placeholder="Marca" required><input type="text" id="modelo" placeholder="Modelo" required><input type="text" id="serial" placeholder="Serial" required><button type="submit" class="btn-primary">Guardar</button></form></div></div>
     
     <div id="asignacionModal" class="modal hidden"><div class="modal-content"><h3>Asignación</h3><form id="asignacionForm" class="form"><label>Colaborador</label><input type="text" id="colaborador" required><label>Equipo</label><select id="equipoAsignar" required></select><div class="checks" style="display:grid; grid-template-columns:1fr 1fr;"><label><input type="checkbox" id="chkMonitor"> Monitor</label><label><input type="checkbox" id="chkDiadema"> Diadema</label></div><div id="monitorInput" class="hidden"><label>ID Monitor</label><input type="text" id="idMonitor"></div><div id="diademaInput" class="hidden"><label>ID Diadema</label><input type="text" id="idDiadema"></div><button type="submit" class="btn-primary">Confirmar</button></form></div></div>
 
     <div id="colaboradorModal" class="modal hidden"><div class="modal-content"><h3>Colaborador</h3><form id="colaboradorForm" class="form"><input type="text" id="colNombre" placeholder="Nombre" required><input type="text" id="colCargo" placeholder="Cargo" required><input type="text" id="colArea" placeholder="Area" required><input type="email" id="colCorreo" placeholder="Correo" required><button type="submit" class="btn-primary">Registrar</button></form></div></div>
 
-    <!-- MODAL NUEVO: CREAR USUARIO -->
     <div id="usuarioModal" class="modal hidden">
         <div class="modal-content">
             <h3>Crear Invitado</h3>
             <form id="usuarioForm" class="form">
+                <label>Nombre de Usuario (opcional)</label>
+                <input type="text" id="newUsername" placeholder="ej: alejandro_ti">
                 <label>Correo del Empleado</label>
                 <input type="email" id="newUserEmail" required placeholder="empleado@empresa.com">
                 <div id="tempPassBox" style="background:#f3f4f6; padding:15px; border-radius:8px; margin:15px 0;">
-                    <span style="font-size:12px; color:#6b7280;">Contraseña Temporal a entregar:</span>
+                    <span style="font-size:12px; color:#6b7280;">Contraseña Temporal:</span>
                     <div id="displayTempPass" style="font-size:20px; font-weight:bold; color:#ff6b57; margin-top:5px;">Dataico-XXXX</div>
                 </div>
                 <button type="submit" class="btn-primary" style="width:100%;">Generar Usuario y Perfil</button>
-                <button type="button" class="btn-primary" style="background:#6b7280; margin-top:10px;" onclick="window.closeModal('usuarioModal')">Cancelar</button>
             </form>
         </div>
     </div>
@@ -143,49 +141,40 @@
                         supabase.from('colaboradores').select('*').order('created_at', {ascending:false}),
                         supabase.from('asignaciones').select('*').order('created_at', {ascending:false}),
                         supabase.from('movimientos').select('*').order('created_at', {ascending:false}),
-                        supabase.from('perfiles').select('*')
+                        supabase.from('perfiles').select('*').order('email', {ascending:true})
                     ]);
                     const eq = rE.data || [], col = rC.data || [], asi = rA.data || [], mov = rM.data || [], perf = rP.data || [];
-                    
                     document.getElementById("totalEquipos").textContent = eq.length;
                     document.getElementById("disponibles").textContent = eq.filter(e => !e.asignado_a).length;
                     document.getElementById("asignadosCount").textContent = eq.filter(e => e.asignado_a).length;
-
                     const render = (id, d, f) => { const el = document.getElementById(id); if(el) el.innerHTML = d.map(f).join(''); };
                     render("recentEquipos", eq.slice(0,5), e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td></tr>`);
                     render("movimientosList", mov.slice(0,5), m => `<tr><td>${new Date(m.created_at).toLocaleDateString()}</td><td>${m.accion}</td><td>${m.equipo}</td></tr>`);
-                    render("equiposList", eq, e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td><td>${e.modelo}</td><td>${e.serial}</td><td>${e.estado}</td><td>${e.asignado_a || '-'}</td></tr>`);
+                    render("equiposList", eq, e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td><td>${e.modelo}</td><td>${e.serial}</td><td>Bueno</td><td>${e.asignado_a || '-'}</td></tr>`);
                     render("asignacionesList", asi, a => `<tr><td>${a.colaborador}</td><td>${a.equipo}</td><td>${new Date(a.fecha_asignacion).toLocaleDateString()}</td><td>${a.monitor_id ? '🖥️':''} ${a.diadema_id ? '🎧':''}</td></tr>`);
                     render("colaboradoresList", col, c => `<tr><td>${c.nombre}</td><td>${c.cargo}</td><td>${c.area}</td><td>${c.correo}</td></tr>`);
-                    
                     if(document.body.classList.contains('is-admin')) {
-                        render("usuariosList", perf, p => `<tr><td>${p.email}</td><td>Activo</td><td>${p.debe_cambiar_clave ? 'SÍ (Pendiente)':'NO (Cambiada)'}</td></tr>`);
+                        render("usuariosList", perf, p => `<tr><td>@${p.usuario || 'sin_usuario'}</td><td>${p.email}</td><td>${p.debe_cambiar_clave ? '🔄 SÍ' : '✅ NO'}</td></tr>`);
                     }
-
                     const sel = document.getElementById("equipoAsignar");
                     if(sel) sel.innerHTML = '<option value="">Sel...</option>' + eq.filter(e=>!e.asignado_a).map(e=>`<option value="${e.codigo}">${e.codigo}</option>`).join('');
-                } catch(err) {}
+                } catch(e) {}
             }
 
-            // CREAR USUARIO (Admin Only)
             document.getElementById('usuarioForm').onsubmit = async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('newUserEmail').value;
+                const username = document.getElementById('newUsername').value;
                 const pass = window.currentTempPass;
-                
-                // 1. Registrar en Auth
                 const { data, error } = await supabase.auth.signUp({ email, password: pass });
-                if(error) return alert("Error al crear usuario: " + error.message);
-                
-                // 2. Registrar en Perfiles (vía Admin bypass)
+                if(error) return alert("Error: " + error.message);
                 if(data.user) {
-                    await supabase.from('perfiles').insert([{ id: data.user.id, email: email, debe_cambiar_clave: true }]);
-                    alert("¡Usuario creado!\n\nCorreo: " + email + "\nClave Temporal: " + pass + "\n\nEntrega estos datos al empleado.");
+                    await supabase.from('perfiles').insert([{ id: data.user.id, email: email, usuario: username || null, debe_cambiar_clave: true }]);
+                    alert("¡Éxito!\nUser: " + (username || email) + "\nPass: " + pass);
                     location.reload();
                 }
             };
-
-            // Lógica duplicada de equipos para asegurar funcionamiento
+            // Lógica equipos...
             const org = document.getElementById("origen"), gen = document.getElementById("codigoGenerado"), num = document.getElementById("numeroRentado"), nom = document.getElementById("nombreBase");
             const up = () => { if(org.value === 'Rentado') { document.getElementById("rentadoFields").classList.remove("hidden"); document.getElementById("corporativoFields").classList.add("hidden"); gen.value = 'LAPTOP-DA-RE-' + (num.value || ""); } else { document.getElementById("corporativoFields").classList.remove("hidden"); document.getElementById("rentadoFields").classList.add("hidden"); gen.value = (nom.value || "").toUpperCase().replace(/\s+/g, '-'); } };
             org.onchange = up; num.oninput = up; nom.oninput = up; up();
