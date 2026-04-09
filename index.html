@@ -117,7 +117,11 @@
                         <form id="absoluteConfig" class="form">
                             <label>Token ID</label><input type="password" id="absID" placeholder="Ingresa ID">
                             <label>Secret Key</label><input type="password" id="absSecret" placeholder="••••••••">
-                            <button type="submit" class="btn-primary">Guardar Credenciales</button>
+                            <div style="display:flex; gap:10px;">
+                                <button type="submit" class="btn-primary" style="flex:1;">Guardar</button>
+                                <button type="button" class="btn-primary" onclick="window.testAbsoluteConnection()" style="background:#4f46e5; flex:1;">⚡ Probar Conexión</button>
+                            </div>
+                            <div id="absStatus" style="font-size:12px; margin-top:5px; font-weight:bold;"></div>
                         </form>
                     </div>
                     <div class="card">
@@ -331,6 +335,43 @@
                 if(json) await supabase.from('config_seguridad').upsert({ clave:'drive_json', valor:json }, {onConflict:'clave'});
                 alert("Configuración de Google Drive vinculada.");
             };
+
+            window.testAbsoluteConnection = async () => {
+                const status = document.getElementById('absStatus');
+                status.textContent = "⏳ Conectando con Absolute...";
+                status.style.color = "#4b5563";
+                
+                try {
+                    const { data, error } = await supabase.functions.invoke('absolute-bridge', {
+                        body: { action: 'test' }
+                    });
+                    
+                    if (error) throw error;
+                    if (data.success) {
+                        status.textContent = `✅ Éxito: ${data.message}`;
+                        status.style.color = "#107c10";
+                    } else {
+                        status.textContent = `❌ Error: ${data.message}`;
+                        status.style.color = "#d94835";
+                    }
+                } catch (err) {
+                    status.textContent = "❌ Error: No se pudo contactar con el puente seguro (Edge Function).";
+                    status.style.color = "#d94835";
+                }
+            };
+
+            // CARGAR CONFIG AL INICIO
+            async function loadConfig() {
+                const { data } = await supabase.from('config_seguridad').select('*');
+                if(data) {
+                    data.forEach(c => {
+                        if(c.clave === 'abs_id') document.getElementById('absID').value = c.valor;
+                        if(c.clave === 'drive_folder') document.getElementById('driveFolderID').value = c.valor;
+                        // No mostramos el secret ni el JSON por seguridad
+                    });
+                }
+            }
+            loadConfig();
             window.restablecer = async (em) => { if(confirm("Reset clave?")){ await supabase.auth.resetPasswordForEmail(em); await window.logAction('RESET_PASS', em, 'Solicitud enviada'); alert("Ok"); } };
             
             document.getElementById('usuarioForm').onsubmit = async (e) => {
