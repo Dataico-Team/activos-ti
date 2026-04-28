@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,24 +8,72 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
-        body { visibility: hidden; opacity: 0; transition: opacity 0.3s ease; }
-        body.authenticated { visibility: visible; opacity: 1; }
-        .hidden { display: none !important; }
-        .admin-only { display: none; }
-        body.is-admin .admin-only { display: block; }
-        .table-container { overflow-x: auto; max-width: 100%; }
-        table { border-collapse: collapse; width: 100%; font-size: 13px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
-        .btn-csv { background: #107c10; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-csv:hover { background: #0b5a0b; }
+        body {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        body.authenticated {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        body.is-admin .admin-only {
+            display: block;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .btn-csv {
+            background: #107c10;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-csv:hover {
+            background: #0b5a0b;
+        }
     </style>
 </head>
+
 <body>
     <div class="app">
         <aside class="sidebar">
             <div class="brand" style="flex-direction: column; text-align: center; margin-bottom: 50px;">
-                <img src="logo.png" alt="Dataico" style="width: 100%; max-width: 160px; height: auto; margin-bottom: 10px;">
-                <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;">Gestión de Activos</span>
+                <img src="logo.png" alt="Dataico"
+                    style="width: 100%; max-width: 160px; height: auto; margin-bottom: 10px;">
+                <span
+                    style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;">Gestión
+                    de Activos</span>
             </div>
             <nav class="menu">
                 <button class="menu-item active" data-view="dashboard">Dashboard</button>
@@ -32,16 +81,20 @@
                 <button class="menu-item" data-view="asignaciones">Asignaciones</button>
                 <button class="menu-item" data-view="colaboradores">Colaboradores</button>
                 <button class="menu-item" data-view="historial">Historial</button>
-                <button class="menu-item admin-only" data-view="usuarios" id="btnMenuUsuarios">Seguridad / Usuarios</button>
+                <button class="menu-item admin-only" data-view="usuarios" id="btnMenuUsuarios">Seguridad /
+                    Usuarios</button>
             </nav>
         </aside>
         <main class="content">
             <header class="topbar">
-                <div><h2 id="viewTitle">Dashboard</h2><p id="viewSubtitle">Trazabilidad de activos y periféricos</p></div>
+                <div>
+                    <h2 id="viewTitle">Dashboard</h2>
+                    <p id="viewSubtitle">Trazabilidad de activos y periféricos</p>
+                </div>
                 <div class="user-box">
                     <span id="userEmailDisplay" style="font-weight:bold; margin-right:15px;">...</span>
-                    <button class="btn-primary admin-only" style="background:#107c10; margin-right:10px;" onclick="window.syncData()">🔄 Sincronizar</button>
-                    <button class="btn-primary" style="background:#d94835; margin:0;" onclick="window.logout()">Salir</button>
+                    <button class="btn-primary" style="background:#d94835; margin:0;"
+                        onclick="window.logout()">Salir</button>
                 </div>
             </header>
 
@@ -53,7 +106,21 @@
                     <div class="card stat"><span>Asignados</span><strong id="asignadosCount">0</strong></div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
-                    <div class="card"><div class="card-header"><h3>Últimos Movimientos</h3></div><table><thead><tr><th>Fecha</th><th>Acción</th><th>Responsable</th></tr></thead><tbody id="movimientosList"></tbody></table></div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Últimos Movimientos</h3>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Acción</th>
+                                    <th>Responsable</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movimientosList"></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -66,11 +133,16 @@
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 250px;">
-                            <label style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Buscar por Marca, Modelo o Serial:</label>
-                            <input type="text" id="filtroEquipoBusqueda" placeholder="Ej: Dell, Inspiron, SN123..." oninput="window.filtrarEquipos()">
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Buscar
+                                por Marca, Modelo o Serial:</label>
+                            <input type="text" id="filtroEquipoBusqueda" placeholder="Ej: Dell, Inspiron, SN123..."
+                                oninput="window.filtrarEquipos()">
                         </div>
                         <div style="width: 200px;">
-                            <label style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Categoría (Origen):</label>
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Categoría
+                                (Origen):</label>
                             <select id="filtroEquipoOrigen" onchange="window.filtrarEquipos()">
                                 <option value="">Todos</option>
                                 <option value="Propio">Propio</option>
@@ -101,14 +173,70 @@
 
             <!-- VISTA ASIGNACIONES -->
             <section id="asignacionesView" class="view">
-                <div class="topbar"><h3>Control de Asignaciones</h3><button class="btn-primary" onclick="window.openModal('asignacionModal')">+ Nueva Asignación</button></div>
-                <div class="card"><table><thead><tr><th>Colaborador</th><th>Equipo</th><th>Fecha</th><th>Accesorios</th><th>Acciones</th></tr></thead><tbody id="asignacionesList"></tbody></table></div>
+                <div class="topbar">
+                    <h3>Control de Asignaciones</h3><button class="btn-primary"
+                        onclick="window.openModal('asignacionModal')">+ Nueva Asignación</button>
+                </div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Buscar
+                                Asignación:</label>
+                            <input type="text" id="filtroAsignaciones"
+                                placeholder="Buscar por colaborador, equipo, o serial de accesorios..."
+                                oninput="window.filtrarAsignaciones()">
+                        </div>
+                    </div>
+                </div>
+                <div class="card table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Colaborador</th>
+                                <th>Equipo</th>
+                                <th>Fecha</th>
+                                <th>Accesorios</th>
+                                <th style="text-align:center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="asignacionesList"></tbody>
+                    </table>
+                </div>
             </section>
 
             <!-- VISTA COLABORADORES -->
             <section id="colaboradoresView" class="view">
-                <div class="topbar"><h3>Directorio de Personal</h3><button class="btn-primary" onclick="window.openModal('colaboradorModal')">+ Nuevo Colaborador</button></div>
-                <div class="card"><table><thead><tr><th>Nombre</th><th>Cargo</th><th>Área</th><th>Correo</th><th>Acciones</th></tr></thead><tbody id="colaboradoresList"></tbody></table></div>
+                <div class="topbar">
+                    <h3>Directorio de Personal</h3><button class="btn-primary"
+                        onclick="window.openModal('colaboradorModal')">+ Nuevo Colaborador</button>
+                </div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Buscar
+                                Colaborador:</label>
+                            <input type="text" id="filtroColaboradores"
+                                placeholder="Buscar por nombre, cargo, área o correo..."
+                                oninput="window.filtrarColaboradores()">
+                        </div>
+                    </div>
+                </div>
+                <div class="card table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Cargo</th>
+                                <th>Área</th>
+                                <th>Correo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="colaboradoresList"></tbody>
+                    </table>
+                </div>
             </section>
 
             <!-- VISTA HISTORIAL MAESTRO -->
@@ -116,12 +244,18 @@
                 <div class="topbar" style="flex-wrap: wrap; gap: 10px; align-items: center;">
                     <h3>Registro Histórico Detallado</h3>
                     <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <label style="font-size:12px; color:#6b7280; margin:0;">Buscar:</label>
+                        <input type="text" id="filtroHistorialTexto" style="width:200px; margin:0; padding:6px 10px;"
+                            placeholder="Código, serial, acción..." oninput="window.filtrarHistorial()">
+
                         <label style="font-size:12px; color:#6b7280; margin:0;">Desde:</label>
                         <input type="date" id="historialDesde" style="width:auto; padding:6px 10px; margin:0;">
                         <label style="font-size:12px; color:#6b7280; margin:0;">Hasta:</label>
                         <input type="date" id="historialHasta" style="width:auto; padding:6px 10px; margin:0;">
-                        <button class="btn-primary" style="margin:0; padding:8px 12px; background:#1e293b;" onclick="window.filtrarHistorial()">Filtrar</button>
-                        <button class="btn-csv" style="margin:0; padding:8px 12px;" onclick="window.exportToCSV()">📊 Descargar CSV</button>
+                        <button class="btn-primary" style="margin:0; padding:8px 12px; background:#1e293b;"
+                            onclick="window.filtrarHistorial()">Filtrar</button>
+                        <button class="btn-csv" style="margin:0; padding:8px 12px;" onclick="window.exportToCSV()">📊
+                            Descargar CSV</button>
                     </div>
                 </div>
                 <div class="card table-container">
@@ -147,9 +281,33 @@
 
             <!-- VISTA USUARIOS -->
             <section id="usuariosView" class="view">
-                <div class="topbar"><h3>Seguridad y Accesos</h3><button class="btn-primary" onclick="window.openModal('usuarioModal')">+ Crear Nuevo Acceso</button></div>
-                <div class="card">
-                    <table><thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Control</th></tr></thead><tbody id="usuariosList"></tbody></table>
+                <div class="topbar">
+                    <h3>Seguridad y Accesos</h3><button class="btn-primary" onclick="window.openModal('usuarioModal')">+
+                        Crear Nuevo Acceso</button>
+                </div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Buscar
+                                Usuario:</label>
+                            <input type="text" id="filtroUsuarios" placeholder="Buscar por nombre, correo..."
+                                oninput="window.filtrarUsuarios()">
+                        </div>
+                    </div>
+                </div>
+                <div class="card table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Correo</th>
+                                <th>Rol</th>
+                                <th>Control</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosList"></tbody>
+                    </table>
                 </div>
             </section>
             </section>
@@ -171,6 +329,7 @@
                             <option value="Celular">Celular</option>
                             <option value="Diadema">Diadema</option>
                             <option value="Monitor">Monitor</option>
+                            <option value="Periférico">Periférico</option>
                         </select>
                     </div>
                     <div>
@@ -192,22 +351,132 @@
                     <input type="text" id="nombreBase" placeholder="Ej: LAPTOP-ADMIN-01">
                 </div>
 
-                <div style="background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
-                    <label style="font-size: 11px; color: var(--primary); text-transform: uppercase; margin-bottom: 4px;">Código Final Generado:</label>
-                    <input type="text" id="codigoGenerado" readonly style="background: transparent; border: none; font-weight: 700; font-size: 18px; color: white; padding: 0;">
+                <div
+                    style="background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
+                    <label
+                        style="font-size: 11px; color: var(--primary); text-transform: uppercase; margin-bottom: 4px;">Código
+                        Final Generado:</label>
+                    <input type="text" id="codigoGenerado" readonly
+                        style="background: transparent; border: none; font-weight: 700; font-size: 18px; color: white; padding: 0;">
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                     <input type="text" id="marca" placeholder="Marca" list="datalistMarcas" required>
                     <input type="text" id="modelo" placeholder="Modelo" list="datalistModelos" required>
                 </div>
+
+                <div id="extraCamposCorporativos">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div>
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Referencia
+                                / Detalle</label>
+                            <input type="text" id="referencia" placeholder="Ej: Wireless Mouse">
+                        </div>
+                        <div>
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Ciudad</label>
+                            <input type="text" id="ciudad" placeholder="Ej: Cajicá">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div>
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Proceso
+                                (Área)</label>
+                            <input type="text" id="proceso" placeholder="Ej: MCO">
+                        </div>
+                        <div>
+                            <label
+                                style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Fecha
+                                de Compra</label>
+                            <input type="text" id="fechaCompra" placeholder="Ej: COMPRA 12/04/2024">
+                        </div>
+                    </div>
+                </div>
                 <input type="text" id="serial" placeholder="Serial o S/N" required>
-                
+
                 <button type="submit" class="btn-primary" style="margin-top: 10px;">Guardar Equipo</button>
             </form>
         </div>
     </div>
-    
+
+    <!-- MODAL DETALLE/EDICIÓN EQUIPO -->
+    <div id="equipoDetalleModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="modal-close" onclick="window.closeModal('equipoDetalleModal')">&times;</span>
+            <h3 style="margin-bottom: 24px;">Detalles Técnicos del Equipo</h3>
+            <form id="equipoDetalleForm" class="form">
+                <input type="hidden" id="editCodigo">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Marca</label>
+                        <input type="text" id="editMarca" readonly>
+                    </div>
+                    <div>
+                        <label>Modelo</label>
+                        <input type="text" id="editModelo" readonly>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Procesador</label>
+                        <input type="text" id="editProcesador" placeholder="Ej: AMD 7 7730 2.0GHZ">
+                    </div>
+                    <div>
+                        <label>Generación</label>
+                        <input type="text" id="editGeneracion" placeholder="Ej: 13TH">
+                    </div>
+                </div>
+
+                <div id="extraCamposCorporativosEdit">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label>Referencia / Detalle</label>
+                            <input type="text" id="editReferencia" placeholder="Ej: LENOVO THINKPAD">
+                        </div>
+                        <div>
+                            <label>Ciudad</label>
+                            <input type="text" id="editCiudad" placeholder="Ej: ENVIGADO">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label>Proceso (Área)</label>
+                            <input type="text" id="editProceso" placeholder="Ej: GAF">
+                        </div>
+                        <div>
+                            <label>Fecha Compra</label>
+                            <input type="text" id="editFechaCompra" placeholder="Ej: COMPRA 12/04/2026">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>RAM</label>
+                        <input type="text" id="editRam" placeholder="Ej: 16GB">
+                    </div>
+                    <div>
+                        <label>Disco (HDD/SSD)</label>
+                        <input type="text" id="editDisco" placeholder="Ej: 512GB">
+                    </div>
+                </div>
+
+                <div>
+                    <label>Sistema Operativo</label>
+                    <input type="text" id="editSo" placeholder="Ej: W11 PRO">
+                </div>
+
+                <button type="submit" class="btn-primary" style="width:100%; margin-top: 20px;">Actualizar
+                    Detalles</button>
+            </form>
+        </div>
+    </div>
+
     <datalist id="datalistMarcas"></datalist>
     <datalist id="datalistModelos"></datalist>
 
@@ -219,18 +488,35 @@
             <form id="asignacionForm" class="form">
                 <label>Seleccionar Colaborador</label>
                 <select id="colaborador" required></select>
-                
+
                 <label>Seleccionar Equipo Disponible</label>
                 <select id="equipoAsignar" required></select>
 
                 <div class="checks">
-                    <span style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Accesorios Adicionales:</span>
+                    <span
+                        style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Accesorios
+                        Adicionales:</span>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                             <input type="checkbox" id="chkMonitor" style="width: 18px; height: 18px;"> Monitor
                         </label>
                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                             <input type="checkbox" id="chkDiadema" style="width: 18px; height: 18px;"> Diadema
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="chkBocinas" style="width: 18px; height: 18px;"> Bocinas
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="chkTeclado" style="width: 18px; height: 18px;"> Teclado/Mouse
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="chkHub" style="width: 18px; height: 18px;"> Hub USB
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="chkBase" style="width: 18px; height: 18px;"> Base Refrig.
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="chkBolso" style="width: 18px; height: 18px;"> Bolso
                         </label>
                     </div>
                 </div>
@@ -243,8 +529,13 @@
                     <label>ID / Serial Diadema</label>
                     <input type="text" id="idDiadema" placeholder="Ej: DIA-01">
                 </div>
+                <div id="bocinasInput" class="hidden">
+                    <label>ID / Serial Bocinas</label>
+                    <input type="text" id="idBocinas" placeholder="Ej: BOC-01">
+                </div>
 
-                <button type="submit" class="btn-primary" style="width:100%; margin-top: 15px;">Confirmar Entrega</button>
+                <button type="submit" class="btn-primary" style="width:100%; margin-top: 15px;">Confirmar
+                    Entrega</button>
             </form>
         </div>
     </div>
@@ -261,7 +552,79 @@
                     <input type="text" id="colArea" placeholder="Área / Departamento" required>
                 </div>
                 <input type="email" id="colCorreo" placeholder="Correo Corporativo" required>
+                <input type="text" id="colDireccion" placeholder="Dirección de Residencia">
                 <button type="submit" class="btn-primary" style="margin-top: 10px;">Registrar Colaborador</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE COLABORADOR -->
+    <div id="colaboradorDetalleModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 650px;">
+            <span class="modal-close" onclick="window.closeModal('colaboradorDetalleModal')">&times;</span>
+            <h3 style="margin-bottom: 24px;">Detalles de la Asignación</h3>
+
+            <form id="colaboradorEditForm" class="form">
+                <input type="hidden" id="editColId">
+                <input type="hidden" id="editAsignacionId">
+                <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                    <div>
+                        <label>Nombre del Colaborador</label>
+                        <input type="text" id="editColNombre" required readonly
+                            style="background: rgba(255,255,255,0.05); color: var(--text-dim); border-color: transparent; cursor: default;">
+                    </div>
+                    <div class="hidden">
+                        <label>Dirección</label>
+                        <input type="text" id="editColDireccion">
+                    </div>
+                </div>
+
+                <div
+                    style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-top: 20px;">
+                    <h4 style="margin: 0 0 15px 0; color: var(--primary);">Activos y Periféricos Asignados</h4>
+                    <div id="assignedAssetsList" style="margin-bottom: 15px; font-size: 14px;">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+
+                    <div class="checks" style="background: rgba(0,0,0,0.2);">
+                        <span
+                            style="font-size: 12px; color: var(--text-dim); margin-bottom: 8px; display: block;">Modificar
+                            Accesorios:</span>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <label><input type="checkbox" id="editChkMonitor"> Monitor</label>
+                            <label><input type="checkbox" id="editChkDiadema"> Diadema</label>
+                            <label><input type="checkbox" id="editChkBocinas"> Bocinas</label>
+                            <label><input type="checkbox" id="editChkTeclado"> Teclado/Mouse</label>
+                            <label><input type="checkbox" id="editChkHub"> Hub USB</label>
+                            <label><input type="checkbox" id="editChkBase"> Base Refrig.</label>
+                            <label><input type="checkbox" id="editChkBolso"> Bolso</label>
+                        </div>
+                    </div>
+
+                    <div id="editExtraInputs"
+                        style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div id="wrapEditIdMonitor" class="hidden">
+                            <label
+                                style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; display: block;">Serial
+                                Monitor</label>
+                            <input type="text" id="editIdMonitor" placeholder="Ej: MON-01">
+                        </div>
+                        <div id="wrapEditIdDiadema" class="hidden">
+                            <label
+                                style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; display: block;">Serial
+                                Diadema</label>
+                            <input type="text" id="editIdDiadema" placeholder="Ej: DIA-01">
+                        </div>
+                        <div id="wrapEditIdBocinas" class="hidden">
+                            <label
+                                style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; display: block;">Serial
+                                Bocinas</label>
+                            <input type="text" id="editIdBocinas" placeholder="Ej: BOC-01">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width:100%; margin-top: 20px;">Guardar Cambios</button>
             </form>
         </div>
     </div>
@@ -274,35 +637,52 @@
             <form id="usuarioForm" class="form">
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <div>
-                        <label style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Username (opcional)</label>
+                        <label
+                            style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Username
+                            (opcional)</label>
                         <input type="text" id="newUsername" placeholder="Nombre de usuario">
                     </div>
                     <div>
-                        <label style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Correo Electrónico</label>
+                        <label
+                            style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Correo
+                            Electrónico</label>
                         <input type="email" id="newUserEmail" required placeholder="ejemplo@dataico.com">
                     </div>
                 </div>
-                
-                <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 16px; border: 1px solid var(--border); margin: 10px 0;">
+
+                <div
+                    style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 16px; border: 1px solid var(--border); margin: 10px 0;">
                     <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="chkSuperAdmin" style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
+                        <input type="checkbox" id="chkSuperAdmin"
+                            style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
                         <span style="font-size: 15px; font-weight: 600;">¿Es Super Admin?</span>
                     </label>
-                    <p style="font-size: 12px; color: var(--text-dim); margin: 8px 0 0 30px;">Los administradores pueden gestionar usuarios y configuraciones.</p>
+                    <p style="font-size: 12px; color: var(--text-dim); margin: 8px 0 0 30px;">Los administradores pueden
+                        gestionar usuarios y configuraciones.</p>
                 </div>
 
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 18px; border-radius: 16px; border: 1px solid var(--primary); margin-top: 10px; position: relative; overflow: hidden;">
-                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary);"></div>
-                    <span style="font-size: 11px; color: var(--primary); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Clave Temporal Generada</span>
+                <div
+                    style="background: rgba(15, 23, 42, 0.6); padding: 18px; border-radius: 16px; border: 1px solid var(--primary); margin-top: 10px; position: relative; overflow: hidden;">
+                    <div
+                        style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary);">
+                    </div>
+                    <span
+                        style="font-size: 11px; color: var(--primary); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Clave
+                        Temporal Generada</span>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                        <strong id="displayTempPass" style="font-size: 22px; color: var(--primary); font-family: monospace;">Dataico-XXXX</strong>
-                        <button type="button" class="btn-primary" id="btnCopiarCreds" style="padding: 6px 12px; font-size: 11px; background: rgba(255,255,255,0.1); box-shadow: none;">📋 Copiar</button>
+                        <strong id="displayTempPass"
+                            style="font-size: 22px; color: var(--primary); font-family: monospace;">Dataico-XXXX</strong>
+                        <button type="button" class="btn-primary" id="btnCopiarCreds"
+                            style="padding: 6px 12px; font-size: 11px; background: rgba(255,255,255,0.1); box-shadow: none;">📋
+                            Copiar</button>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 24px;">
                     <button type="submit" class="btn-primary">Crear Acceso</button>
-                    <button type="button" class="btn-primary" style="background: rgba(255,255,255,0.05); color: var(--text-dim); box-shadow: none;" onclick="window.closeModal('usuarioModal')">Cancelar</button>
+                    <button type="button" class="btn-primary"
+                        style="background: rgba(255,255,255,0.05); color: var(--text-dim); box-shadow: none;"
+                        onclick="window.closeModal('usuarioModal')">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -311,31 +691,47 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        (async function() {
+        (async function () {
             const sURL = 'https://hsczygcbmtyzkzeksajm.supabase.co', sKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzY3p5Z2NibXR5emt6ZWtzYWptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2Nzk0NDksImV4cCI6MjA5MTI1NTQ0OX0.YetS-bD8wd_ZsLjeEhO_9ZsrlnxHd-MVPcC0iQS5EF0';
             const supabase = window.supabase.createClient(sURL, sKEY);
             window.logout = async () => { await supabase.auth.signOut(); localStorage.clear(); location.href = 'login.html'; };
 
             // GLOBALES DE UI
-            window.openModal = (id) => { if(id==='usuarioModal'){const p="Dataico-"+Math.floor(1000+Math.random()*9000); document.getElementById('displayTempPass').textContent=p; window.currentTempPass=p;} document.getElementById(id).classList.remove('hidden'); };
+            window.openModal = (id) => { if (id === 'usuarioModal') { const p = "Dataico-" + Math.floor(1000 + Math.random() * 9000); document.getElementById('displayTempPass').textContent = p; window.currentTempPass = p; } document.getElementById(id).classList.remove('hidden'); };
             window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
             const menuItems = document.querySelectorAll(".menu-item"), views = document.querySelectorAll(".view");
             menuItems.forEach(btn => { btn.onclick = () => { menuItems.forEach(x => x.classList.remove("active")); btn.classList.add("active"); views.forEach(v => v.classList.remove("active")); document.getElementById(btn.dataset.view + "View").classList.add("active"); document.getElementById("viewTitle").textContent = btn.textContent; }; });
-            
-            const chkM = document.getElementById("chkMonitor"), inM = document.getElementById("monitorInput"), chkD = document.getElementById("chkDiadema"), inD = document.getElementById("diademaInput");
-            if(chkM) chkM.onchange = () => chkM.checked ? inM.classList.remove("hidden") : inM.classList.add("hidden");
-            if(chkD) chkD.onchange = () => chkD.checked ? inD.classList.remove("hidden") : inD.classList.add("hidden");
-            document.getElementById('btnCopiarCreds').onclick = () => { const u = document.getElementById('newUsername').value || document.getElementById('newUserEmail').value; const t = `👤 Usuario: ${u}\n🔑 Clave: ${window.currentTempPass}\n\n👉 Activos TI Dataico`; navigator.clipboard.writeText(t).then(() => alert("Copiado!")); };
+
+            const chkM = document.getElementById("chkMonitor"), inM = document.getElementById("monitorInput"),
+                chkD = document.getElementById("chkDiadema"), inD = document.getElementById("diademaInput"),
+                chkB = document.getElementById("chkBocinas"), inB = document.getElementById("bocinasInput");
+
+            if (chkM) chkM.onchange = () => chkM.checked ? inM.classList.remove("hidden") : inM.classList.add("hidden");
+            if (chkD) chkD.onchange = () => chkD.checked ? inD.classList.remove("hidden") : inD.classList.add("hidden");
+            if (chkB) chkB.onchange = () => chkB.checked ? inB.classList.remove("hidden") : inB.classList.add("hidden");
+            window.copyToClipboard = (text) => {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("¡Copiado al portapapeles!");
+                }).catch(err => {
+                    console.error('Error al copiar: ', err);
+                });
+            };
+
+            document.getElementById('btnCopiarCreds').onclick = () => {
+                const u = document.getElementById('newUsername').value || document.getElementById('newUserEmail').value;
+                const t = `👤 Usuario: ${u}\n🔑 Clave: ${window.currentTempPass}\n\n👉 Activos TI Dataico`;
+                window.copyToClipboard(t);
+            };
 
             // MOTOR DE REGISTRO INTELIGENTE (AUDITORÍA)
             window.logAction = async (accion, ref, detalles, meta = {}) => {
                 const user = (localStorage.getItem('test_bypass') === 'true') ? "Admin Master" : document.getElementById('userEmailDisplay').textContent;
                 let finalTipo = meta.tipo || null, finalSerial = meta.serial || null;
-                
+
                 // Si solo tenemos el código del equipo, buscamos su info automáticamente
-                if(ref && !finalTipo) {
+                if (ref && !finalTipo) {
                     const { data: e } = await supabase.from('equipos').select('tipo, serial').eq('codigo', ref).single();
-                    if(e) { finalTipo = e.tipo; finalSerial = e.serial; }
+                    if (e) { finalTipo = e.tipo; finalSerial = e.serial; }
                 }
 
                 await supabase.from('movimientos').insert([{
@@ -344,14 +740,14 @@
                     colaborador: meta.colaborador || null,
                     estado_anterior: meta.estado_ant || null,
                     estado_nuevo: meta.estado_nue || null
-                }]).then(({error}) => { if (error) alert("Error guardando historial: " + error.message); });
+                }]).then(({ error }) => { if (error) alert("Error guardando historial: " + error.message); });
             };
 
             // EXPORTACIÓN CSV
             window.exportToCSV = async () => {
-                const { data: logs } = await supabase.from('movimientos').select('*').order('created_at', {ascending:false});
-                if(!logs || logs.length === 0) return alert("No hay datos para exportar.");
-                
+                const { data: logs } = await supabase.from('movimientos').select('*').order('created_at', { ascending: false });
+                if (!logs || logs.length === 0) return alert("No hay datos para exportar.");
+
                 const headers = ["Fecha", "Accion", "Codigo", "Tipo", "Serial", "Colaborador", "Realizado_por", "Detalle", "Estado_Ant", "Estado_Nue"];
                 const rows = logs.map(l => [
                     new Date(l.created_at).toLocaleString(), l.accion, l.equipo, l.tipo, l.serial, l.colaborador, l.realizado_por, l.detalles, l.estado_anterior, l.estado_nuevo
@@ -363,7 +759,7 @@
 
                 const link = document.createElement("a");
                 link.setAttribute("href", encodeURI(csvContent));
-                link.setAttribute("download", `Historial_Activos_TI_${new Date().toISOString().slice(0,10)}.csv`);
+                link.setAttribute("download", `Historial_Activos_TI_${new Date().toISOString().slice(0, 10)}.csv`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -371,15 +767,15 @@
 
             // SEGURIDAD
             const check = async () => {
-                if(localStorage.getItem('test_bypass')==='true'){ document.body.classList.add('is-admin','authenticated'); document.getElementById('userEmailDisplay').textContent="Admin Master"; loadData(); }
+                if (localStorage.getItem('test_bypass') === 'true') { document.body.classList.add('is-admin', 'authenticated'); document.getElementById('userEmailDisplay').textContent = "Admin Master"; loadData(); }
                 else {
-                    const { data:{session} } = await supabase.auth.getSession();
-                    if(!session){ location.href='login.html'; return; }
-                    const { data:m } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-                    if(m.nextLevel==='aal2' && m.currentLevel==='aal1'){ location.href='login.html'; return; }
-                    const { data:p } = await supabase.from('perfiles').select('es_super_admin').eq('id', session.user.id).single();
-                    if(p && p.es_super_admin) document.body.classList.add('is-admin');
-                    document.body.classList.add('authenticated'); document.getElementById('userEmailDisplay').textContent=session.user.email; loadData();
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) { location.href = 'login.html'; return; }
+                    const { data: m } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+                    if (m.nextLevel === 'aal2' && m.currentLevel === 'aal1') { location.href = 'login.html'; return; }
+                    const { data: p } = await supabase.from('perfiles').select('es_super_admin').eq('id', session.user.id).single();
+                    if (p && p.es_super_admin) document.body.classList.add('is-admin');
+                    document.body.classList.add('authenticated'); document.getElementById('userEmailDisplay').textContent = session.user.email; loadData();
                 }
             };
             check();
@@ -387,37 +783,96 @@
             async function loadData() {
                 try {
                     const [rE, rC, rA, rM, rP] = await Promise.all([
-                        supabase.from('equipos').select('*').order('created_at', {ascending:false}),
-                        supabase.from('colaboradores').select('*').order('created_at', {ascending:false}),
+                        supabase.from('equipos').select('*').order('created_at', { ascending: false }),
+                        supabase.from('colaboradores').select('*').order('created_at', { ascending: false }),
                         supabase.from('asignaciones').select('*'),
-                        supabase.from('movimientos').select('*').order('created_at', {ascending:false}),
-                        supabase.from('perfiles').select('*').order('email', {ascending:true})
+                        supabase.from('movimientos').select('*').order('created_at', { ascending: false }),
+                        supabase.from('perfiles').select('*').order('email', { ascending: true })
                     ]);
-                    
+
                     let dbErrors = [rE.error, rC.error, rA.error, rM.error, rP.error].filter(Boolean);
                     if (dbErrors.length > 0) {
                         console.error("Error desde Base de Datos al cargar:", dbErrors);
                     }
 
                     const eq = rE.data || [], col = rC.data || [], asi = rA.data || [], mov = rM.data || [], perf = rP.data || [];
-                    window.allEquipos = eq; // Guardar globalmente para filtros
-                    
-                    document.getElementById("totalEquipos").textContent=eq.length; document.getElementById("disponibles").textContent=eq.filter(e=>!e.asignado_a).length; document.getElementById("asignadosCount").textContent=eq.filter(e=>e.asignado_a).length;
-                    
-                    const render = (id, d, f) => { const el = document.getElementById(id); if(el) el.innerHTML = d.map(f).join(''); };
-                    render("recentEquipos", eq.slice(0,5), e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td></tr>`);
-                    render("movimientosList", mov.slice(0,5), m => `<tr><td>${new Date(m.created_at).toLocaleDateString()}</td><td>${m.accion}</td><td>${m.realizado_por}</td></tr>`);
-                    
-                    window.filtrarEquipos(); // Render inicial de equipos con filtros
-                    
-                    render("asignacionesList", asi, a => `<tr><td>${a.colaborador}</td><td>${a.equipo}</td><td>${new Date(a.fecha_asignacion || a.created_at).toLocaleDateString()}</td><td>${a.monitor_id?'🖥️':''} ${a.diadema_id?'🎧':''}</td><td><button onclick="window.eliminarRegistro('asignaciones', 'id', '${a.id}', '${a.equipo}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
-                    render("colaboradoresList", col, c => `<tr><td>${c.nombre}</td><td>${c.cargo}</td><td>${c.area}</td><td>${c.correo}</td><td><button onclick="window.eliminarRegistro('colaboradores', 'id', '${c.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
-                    render("usuariosList", perf, p => `<tr><td>${p.usuario || '-'}</td><td>${p.email}</td><td><span style="padding:2px 8px; border-radius:12px; font-size:11px; font-weight:bold; background:${p.es_super_admin?'#107c10':'#d94835'}; color:white;">${p.es_super_admin?'Admin Master':'Estándar'}</span></td><td><button onclick="window.restablecer('${p.email}')" style="background:transparent;border:none;cursor:pointer;margin-right:8px;" title="Enviar correo de recuperación">🔑</button><button onclick="window.eliminarRegistro('perfiles', 'id', '${p.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
-                    
-                    // HISTORIAL FULL
+                    window.allEquipos = eq;
+                    window.allColaboradores = col.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+                    window.allAsignaciones = asi;
+                    window.allUsuarios = perf;
                     window.movimientosData = mov;
+
+                    document.getElementById("totalEquipos").textContent = eq.length; document.getElementById("disponibles").textContent = eq.filter(e => !e.asignado_a).length; document.getElementById("asignadosCount").textContent = eq.filter(e => e.asignado_a).length;
+
+                    window.render = (id, d, f) => { const el = document.getElementById(id); if (el) el.innerHTML = d.map(f).join(''); };
+                    window.render("recentEquipos", eq.slice(0, 5), e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td></tr>`);
+                    window.render("movimientosList", mov.slice(0, 5), m => `<tr><td>${new Date(m.created_at).toLocaleDateString()}</td><td>${m.accion}</td><td>${m.realizado_por}</td></tr>`);
+
+                    window.renderAsignacionesRow = a => `<tr class="clickable-row" onclick="window.openAsignacionDetalle('${a.id}')" style="cursor:pointer;"><td style="vertical-align:middle;">${a.colaborador}</td><td style="vertical-align:middle;">${a.equipo}</td><td style="vertical-align:middle;">${new Date(a.fecha_asignacion || a.created_at).toLocaleDateString()}</td>
+                    <td style="vertical-align:middle;">
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                            ${a.monitor_id ? `<span style="padding:4px 8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; font-size:11px; white-space:nowrap;">🖥️ Monitor: <strong>${a.monitor_id}</strong></span>` : ''}
+                            ${a.diadema_id ? `<span style="padding:4px 8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; font-size:11px; white-space:nowrap;">🎧 Diadema: <strong>${a.diadema_id}</strong></span>` : ''}
+                            ${a.bocinas_id ? `<span style="padding:4px 8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; font-size:11px; white-space:nowrap;">🔊 Bocinas: <strong>${a.bocinas_id}</strong></span>` : ''}
+                            ${a.teclado_mouse ? `<span style="padding:4px 8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; font-size:11px; white-space:nowrap;">⌨️ Teclado/Mouse</span>` : ''}
+                            ${a.hub_usb ? `<span style="padding:4px 8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; font-size:11px; white-space:nowrap;">🔌 Hub USB</span>` : ''}
+                            ${a.base_refrigerante ? `<span style="padding:4px 8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; font-size:11px; white-space:nowrap;">❄️ Base Refrig.</span>` : ''}
+                            ${a.bolso ? `<span style="padding:4px 8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; font-size:11px; white-space:nowrap;">💼 Bolso</span>` : ''}
+                        </div>
+                    </td><td style="text-align:center; vertical-align:middle;" onclick="event.stopPropagation()"><button onclick="window.eliminarRegistro('asignaciones', 'id', '${a.id}', '${a.equipo}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`;
+
+                    window.renderColaboradorRow = c => `
+                        <tr>
+                            <td>${c.nombre}</td>
+                            <td>${c.cargo}</td>
+                            <td>${c.area}</td>
+                            <td>${c.correo}</td>
+                            <td>
+                                <button onclick="window.eliminarRegistro('colaboradores', 'id', '${c.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+
+                    window.renderUsuarioRow = p => `<tr><td>${p.usuario || '-'}</td><td>${p.email}</td><td><span style="padding:2px 8px; border-radius:12px; font-size:11px; font-weight:bold; background:${p.es_super_admin ? '#107c10' : '#d94835'}; color:white;">${p.es_super_admin ? 'Admin Master' : 'Estándar'}</span></td><td><button onclick="window.restablecer('${p.email}')" style="background:transparent;border:none;cursor:pointer;margin-right:8px;" title="Enviar correo de recuperación">🔑</button><button onclick="window.eliminarRegistro('perfiles', 'id', '${p.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`;
+
+                    window.filtrarEquipos();
+
+                    window.filtrarAsignaciones = () => {
+                        const search = (document.getElementById('filtroAsignaciones')?.value || '').toLowerCase();
+                        const data = window.allAsignaciones.filter(a =>
+                            (a.colaborador || '').toLowerCase().includes(search) ||
+                            (a.equipo || '').toLowerCase().includes(search) ||
+                            (a.monitor_id || '').toLowerCase().includes(search) ||
+                            (a.bocinas_id || '').toLowerCase().includes(search)
+                        );
+                        window.render('asignacionesList', data, window.renderAsignacionesRow);
+                    };
+                    window.filtrarAsignaciones();
+
+                    window.filtrarColaboradores = () => {
+                        const search = (document.getElementById('filtroColaboradores')?.value || '').toLowerCase();
+                        const data = window.allColaboradores.filter(c =>
+                            (c.nombre || '').toLowerCase().includes(search) ||
+                            (c.cargo || '').toLowerCase().includes(search) ||
+                            (c.correo || '').toLowerCase().includes(search) ||
+                            (c.area || '').toLowerCase().includes(search)
+                        );
+                        window.render('colaboradoresList', data, window.renderColaboradorRow);
+                    };
+                    window.filtrarColaboradores();
+
+                    window.filtrarUsuarios = () => {
+                        const search = (document.getElementById('filtroUsuarios')?.value || '').toLowerCase();
+                        const data = window.allUsuarios.filter(u =>
+                            (u.usuario || '').toLowerCase().includes(search) ||
+                            (u.email || '').toLowerCase().includes(search)
+                        );
+                        window.render('usuariosList', data, window.renderUsuarioRow);
+                    };
+                    window.filtrarUsuarios();
+
                     window.renderHistorial = (datos) => {
-                        render("historialFullList", datos, m => `
+                        window.render("historialFullList", datos, m => `
                             <tr>
                                 <td>${new Date(m.created_at).toLocaleString()}</td>
                                 <td style="font-weight:bold; color:#ff6b57;">${m.accion}</td>
@@ -426,38 +881,56 @@
                                 <td>${m.serial || '-'}</td>
                                 <td>${m.colaborador || '-'}</td>
                                 <td>${m.realizado_por}</td>
-                                <td title="${m.detalles}">${m.detalles ? m.detalles.substring(0,25)+'...' : '-'}</td>
+                                <td title="${m.detalles}">${m.detalles ? m.detalles.substring(0, 25) + '...' : '-'}</td>
                                 <td style="color:#d94835;">${m.estado_anterior || '-'}</td>
                                 <td style="color:#107c10; font-weight:bold;">${m.estado_nuevo || '-'}</td>
                             </tr>
                         `);
                     };
-                    window.renderHistorial(mov);
+                    window.filtrarHistorial = () => {
+                        let filtrados = window.movimientosData;
+                        const desde = document.getElementById('historialDesde')?.value;
+                        const hasta = document.getElementById('historialHasta')?.value;
+                        const texto = (document.getElementById('filtroHistorialTexto')?.value || '').toLowerCase();
+                        if (texto) {
+                            filtrados = filtrados.filter(m =>
+                                (m.accion || '').toLowerCase().includes(texto) ||
+                                (m.equipo || '').toLowerCase().includes(texto) ||
+                                (m.serial || '').toLowerCase().includes(texto) ||
+                                (m.colaborador || '').toLowerCase().includes(texto) ||
+                                (m.detalles || '').toLowerCase().includes(texto)
+                            );
+                        }
+                        if (desde) { const d = new Date(desde + 'T00:00:00'); filtrados = filtrados.filter(m => new Date(m.created_at) >= d); }
+                        if (hasta) { const h = new Date(hasta + 'T23:59:59'); filtrados = filtrados.filter(m => new Date(m.created_at) <= h); }
+                        window.renderHistorial(filtrados);
+                    };
+                    window.filtrarHistorial();
 
                     const sel = document.getElementById("equipoAsignar");
-                    if(sel) sel.innerHTML = '<option value="">Sel...</option>' + eq.filter(e=>!e.asignado_a).map(e=>`<option value="${e.codigo}">${e.codigo}</option>`).join('');
+                    if (sel) sel.innerHTML = '<option value="">Sel...</option>' + eq.filter(e => !e.asignado_a).map(e => `<option value="${e.codigo}">${e.codigo}</option>`).join('');
 
                     // AUTOCOMPLETADO DE COLABORADORES
                     const colSel = document.getElementById("colaborador");
-                    if(colSel) colSel.innerHTML = '<option value="">Seleccionar colaborador...</option>' + col.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+                    if (colSel) colSel.innerHTML = '<option value="">Seleccionar colaborador...</option>' + col.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
 
                     // SUGERENCIAS DE MARCAS Y MODELOS
                     const uniqueBrands = [...new Set(eq.map(e => e.marca))].filter(Boolean);
                     const uniqueModels = [...new Set(eq.map(e => e.modelo))].filter(Boolean);
                     const listB = document.getElementById("datalistMarcas"), listM = document.getElementById("datalistModelos");
-                    if(listB) listB.innerHTML = uniqueBrands.map(b => `<option value="${b}">`).join('');
-                    if(listM) listM.innerHTML = uniqueModels.map(m => `<option value="${m}">`).join('');
-                } catch(e) { console.error("Error cargando datos:", e); alert("Error cargando datos: " + e.message); }
+                    if (listB) listB.innerHTML = uniqueBrands.map(b => `<option value="${b}">`).join('');
+                    if (listM) listM.innerHTML = uniqueModels.map(m => `<option value="${m}">`).join('');
+                } catch (e) { console.error("Error cargando datos:", e); alert("Error cargando datos: " + e.message); }
             }
 
             window.filtrarEquipos = () => {
                 const busqueda = document.getElementById('filtroEquipoBusqueda').value.toLowerCase();
                 const origen = document.getElementById('filtroEquipoOrigen').value;
-                
+
                 let filtrados = window.allEquipos.filter(e => {
-                    const matchBusqueda = !busqueda || 
-                        (e.marca || '').toLowerCase().includes(busqueda) || 
-                        (e.modelo || '').toLowerCase().includes(busqueda) || 
+                    const matchBusqueda = !busqueda ||
+                        (e.marca || '').toLowerCase().includes(busqueda) ||
+                        (e.modelo || '').toLowerCase().includes(busqueda) ||
                         (e.serial || '').toLowerCase().includes(busqueda) ||
                         (e.codigo || '').toLowerCase().includes(busqueda);
                     const matchOrigen = !origen || e.origen === origen;
@@ -465,11 +938,11 @@
                 });
 
                 // Ordenar por Código por defecto (para que 01 esté arriba)
-                filtrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, {numeric: true, sensitivity: 'base'}));
+                filtrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
 
                 const el = document.getElementById("equiposList");
-                if(el) el.innerHTML = filtrados.map(e => `
-                    <tr>
+                if (el) el.innerHTML = filtrados.map(e => `
+                    <tr class="clickable-row" onclick="window.openEditEquipo('${e.codigo}')" style="cursor:pointer;">
                         <td>${e.codigo}</td>
                         <td>${e.tipo}</td>
                         <td>${e.marca}</td>
@@ -477,7 +950,8 @@
                         <td>${e.serial}</td>
                         <td><span style="font-size:11px; padding:3px 8px; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid var(--border);">${e.origen || 'Propio'}</span></td>
                         <td>${e.asignado_a || '-'}</td>
-                        <td style="text-align: center;">
+                        <td style="text-align: center;" onclick="event.stopPropagation()">
+                            <button onclick="window.copyToClipboard('Equipo: ${e.codigo} | Serial: ${e.serial}')" style="background:transparent;border:none;cursor:pointer;margin-right:8px;" title="Copiar Info">📋</button>
                             <button onclick="window.eliminarRegistro('equipos', 'codigo', '${e.codigo}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button>
                         </td>
                     </tr>
@@ -488,7 +962,7 @@
                 const desde = document.getElementById('historialDesde').value;
                 const hasta = document.getElementById('historialHasta').value;
                 let filtrados = window.movimientosData || [];
-                
+
                 if (desde) {
                     const d = new Date(desde + 'T00:00:00');
                     filtrados = filtrados.filter(m => new Date(m.created_at) >= d);
@@ -500,20 +974,67 @@
                 window.renderHistorial(filtrados);
             };
 
+            window.openEditEquipo = (codigo) => {
+                const e = window.allEquipos.find(x => x.codigo === codigo);
+                if (!e) return;
+                document.getElementById('editCodigo').value = e.codigo;
+                document.getElementById('editMarca').value = e.marca || '';
+                document.getElementById('editModelo').value = e.modelo || '';
+                document.getElementById('editProcesador').value = e.procesador || '';
+                document.getElementById('editGeneracion').value = e.generacion || '';
+                document.getElementById('editRam').value = e.ram || '';
+                document.getElementById('editDisco').value = e.disco || '';
+                document.getElementById('editSo').value = e.so || '';
+
+                if (e.origen === 'Rentado') {
+                    document.getElementById('extraCamposCorporativosEdit').classList.add('hidden');
+                } else {
+                    document.getElementById('extraCamposCorporativosEdit').classList.remove('hidden');
+                    document.getElementById('editReferencia').value = e.referencia || '';
+                    document.getElementById('editCiudad').value = e.ciudad || '';
+                    document.getElementById('editProceso').value = e.proceso || '';
+                    document.getElementById('editFechaCompra').value = e.fecha_compra || '';
+                }
+
+                document.getElementById('equipoDetalleModal').classList.remove('hidden');
+            };
+
+            document.getElementById('equipoDetalleForm').onsubmit = async (ev) => {
+                ev.preventDefault();
+                const cod = document.getElementById('editCodigo').value;
+                const d = {
+                    procesador: document.getElementById('editProcesador').value,
+                    generacion: document.getElementById('editGeneracion').value,
+                    ram: document.getElementById('editRam').value,
+                    disco: document.getElementById('editDisco').value,
+                    so: document.getElementById('editSo').value,
+                    referencia: document.getElementById('editReferencia').value,
+                    ciudad: document.getElementById('editCiudad').value,
+                    proceso: document.getElementById('editProceso').value,
+                    fecha_compra: document.getElementById('editFechaCompra').value
+                };
+                const { error } = await supabase.from('equipos').update(d).eq('codigo', cod);
+                if (!error) {
+                    await window.logAction('EDITAR_DETALLES', cod, `Update hardware specs`);
+                    window.closeModal('equipoDetalleModal');
+                    await loadData();
+                } else { alert("Error al actualizar: " + error.message); }
+            };
+
             window.syncData = async () => {
                 const codigos = ['LAPTOP-DA-RE-01', 'LAPTOP-DA-RE-04', 'LAPTOP-DA-RE-06'];
                 let count = 0;
-                for(let c of codigos) {
+                for (let c of codigos) {
                     const { error } = await supabase.from('equipos').update({ asignado_a: null }).eq('codigo', c);
-                    if(!error) count++;
+                    if (!error) count++;
                 }
                 alert(`¡Sincronización completada! ${count} equipos liberados.`);
                 await loadData();
             };
 
             window.eliminarRegistro = async (tabla, columna, idValor, extraParam = null) => {
-                if(!confirm(`¿Estás seguro de eliminar permanentemente este registro?`)) return;
-                
+                if (!confirm(`¿Estás seguro de eliminar permanentemente este registro?`)) return;
+
                 if (tabla === 'asignaciones' && extraParam) {
                     await supabase.from('equipos').update({ asignado_a: null }).eq('codigo', extraParam);
                     await window.logAction('ELIMINAR_ASIGNACION', extraParam, 'Asignación eliminada');
@@ -535,35 +1056,41 @@
             };
 
             // EVENTOS DE FORMULARIO
-            window.restablecer = async (em) => { 
-                if(confirm("¿Enviar correo de restablecimiento de contraseña a " + em + "?")) { 
-                    await supabase.auth.resetPasswordForEmail(em); 
-                    await window.logAction('RESET_PASS', em, 'Solicitud enviada'); 
-                    alert("Se ha enviado el correo de recuperación exitosamente."); 
-                } 
+            window.restablecer = async (em) => {
+                if (confirm("¿Enviar correo de restablecimiento de contraseña a " + em + "?")) {
+                    await supabase.auth.resetPasswordForEmail(em);
+                    await window.logAction('RESET_PASS', em, 'Solicitud enviada');
+                    alert("Se ha enviado el correo de recuperación exitosamente.");
+                }
             };
-            
+
             document.getElementById('usuarioForm').onsubmit = async (e) => {
                 e.preventDefault();
                 const em = document.getElementById('newUserEmail').value, us = document.getElementById('newUsername').value, pa = window.currentTempPass, isSA = document.getElementById('chkSuperAdmin').checked;
-                const { data, error } = await supabase.auth.signUp({ email:em, password:pa });
-                if(!error && data.user) {
-                    await supabase.from('perfiles').insert([{ id:data.user.id, email:em, usuario:us||null, debe_cambiar_clave:true, es_super_admin:isSA }]);
-                    await window.logAction('CREAR_USUARIO', em, `Rol: ${isSA?'SA':'STD'}`);
+                const { data, error } = await supabase.auth.signUp({ email: em, password: pa });
+                if (!error && data.user) {
+                    await supabase.from('perfiles').insert([{ id: data.user.id, email: em, usuario: us || null, debe_cambiar_clave: true, es_super_admin: isSA }]);
+                    await window.logAction('CREAR_USUARIO', em, `Rol: ${isSA ? 'SA' : 'STD'}`);
                     window.closeModal('usuarioModal');
                     e.target.reset();
                     await loadData();
-                } else if(error) {
+                } else if (error) {
                     alert("Error al crear usuario: " + error.message);
                 }
             };
 
             document.getElementById("colaboradorForm").onsubmit = async (e) => {
                 e.preventDefault();
-                const d = { nombre:document.getElementById("colNombre").value, cargo:document.getElementById("colCargo").value, area:document.getElementById("colArea").value, correo:document.getElementById("colCorreo").value };
+                const d = {
+                    nombre: document.getElementById("colNombre").value,
+                    cargo: document.getElementById("colCargo").value,
+                    area: document.getElementById("colArea").value,
+                    correo: document.getElementById("colCorreo").value,
+                    direccion: document.getElementById("colDireccion").value
+                };
                 const { error } = await supabase.from('colaboradores').insert([d]);
-                if(!error) { 
-                    await window.logAction('CREAR_COLABORADOR', null, d.nombre, { colaborador: d.nombre }); 
+                if (!error) {
+                    await window.logAction('CREAR_COLABORADOR', null, d.nombre, { colaborador: d.nombre });
                     window.closeModal('colaboradorModal');
                     e.target.reset();
                     await loadData();
@@ -573,10 +1100,27 @@
 
             document.getElementById("asignacionForm").onsubmit = async (e) => {
                 e.preventDefault();
-                const col = document.getElementById("colaborador").value, eq = document.getElementById("equipoAsignar").value, mID = document.getElementById("idMonitor").value, dID = document.getElementById("idDiadema").value;
-                const { error } = await supabase.from('asignaciones').insert([{ colaborador:col, equipo:eq, monitor_id:mID||null, diadema_id:dID||null }]);
-                if(!error) {
-                    await supabase.from('equipos').update({ asignado_a:col }).eq('codigo', eq);
+                const col = document.getElementById("colaborador").value,
+                    eq = document.getElementById("equipoAsignar").value,
+                    mID = document.getElementById("idMonitor").value,
+                    dID = document.getElementById("idDiadema").value,
+                    bID = document.getElementById("idBocinas").value;
+
+                const d = {
+                    colaborador: col,
+                    equipo: eq,
+                    monitor_id: mID || null,
+                    diadema_id: dID || null,
+                    bocinas_id: bID || null,
+                    teclado_mouse: document.getElementById('chkTeclado').checked,
+                    hub_usb: document.getElementById('chkHub').checked,
+                    base_refrigerante: document.getElementById('chkBase').checked,
+                    bolso: document.getElementById('chkBolso').checked
+                };
+
+                const { error } = await supabase.from('asignaciones').insert([d]);
+                if (!error) {
+                    await supabase.from('equipos').update({ asignado_a: col }).eq('codigo', eq);
                     await window.logAction('ASIGNACION', eq, `Asignado a: ${col}`, { colaborador: col, estado_ant: 'DISPONIBLE', estado_nue: 'ASIGNADO' });
                     window.closeModal('asignacionModal');
                     e.target.reset();
@@ -584,18 +1128,133 @@
                 } else { alert("Error al asignar: " + error.message); }
             };
 
+            window.openAsignacionDetalle = async (id) => {
+                const { data: a } = await supabase.from('asignaciones').select('*').eq('id', id).single();
+                if (!a) return;
+
+                document.getElementById('editAsignacionId').value = a.id;
+
+                // Fetch colaborador data just in case to edit direction
+                const { data: c } = await supabase.from('colaboradores').select('*').eq('nombre', a.colaborador).single();
+                if (c) {
+                    document.getElementById('editColId').value = c.id;
+                    document.getElementById('editColNombre').value = c.nombre;
+                    document.getElementById('editColDireccion').value = c.direccion || '';
+                } else {
+                    document.getElementById('editColId').value = '';
+                    document.getElementById('editColNombre').value = a.colaborador;
+                    document.getElementById('editColDireccion').value = '';
+                }
+
+                const assetList = document.getElementById('assignedAssetsList');
+                assetList.innerHTML = `<div style="padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; margin-bottom:10px; border:1px solid var(--border);">
+                    <strong>💻 Equipo:</strong> ${a.equipo}<br>
+                    <small style="color:var(--text-dim)">Asignado el: ${new Date(a.fecha_asignacion || a.created_at).toLocaleDateString()}</small>
+                </div>`;
+
+                document.getElementById('editChkMonitor').checked = !!a.monitor_id;
+                document.getElementById('editIdMonitor').value = a.monitor_id || '';
+                document.getElementById('editChkDiadema').checked = !!a.diadema_id;
+                document.getElementById('editIdDiadema').value = a.diadema_id || '';
+                document.getElementById('editChkBocinas').checked = !!a.bocinas_id;
+                document.getElementById('editIdBocinas').value = a.bocinas_id || '';
+                document.getElementById('editChkTeclado').checked = a.teclado_mouse;
+                document.getElementById('editChkHub').checked = a.hub_usb;
+                document.getElementById('editChkBase').checked = a.base_refrigerante;
+                document.getElementById('editChkBolso').checked = a.bolso;
+
+                document.getElementById('wrapEditIdMonitor').className = a.monitor_id ? '' : 'hidden';
+                document.getElementById('wrapEditIdDiadema').className = a.diadema_id ? '' : 'hidden';
+                document.getElementById('wrapEditIdBocinas').className = a.bocinas_id ? '' : 'hidden';
+
+                document.getElementById('colaboradorDetalleModal').classList.remove('hidden');
+            };
+
+            // Listeners para el modal de edición
+            document.getElementById('editChkMonitor').onchange = (e) => document.getElementById('wrapEditIdMonitor').className = e.target.checked ? '' : 'hidden';
+            document.getElementById('editChkDiadema').onchange = (e) => document.getElementById('wrapEditIdDiadema').className = e.target.checked ? '' : 'hidden';
+            document.getElementById('editChkBocinas').onchange = (e) => document.getElementById('wrapEditIdBocinas').className = e.target.checked ? '' : 'hidden';
+
+            document.getElementById('colaboradorEditForm').onsubmit = async (e) => {
+                e.preventDefault();
+                const colId = document.getElementById('editColId').value;
+                const asiId = document.getElementById('editAsignacionId').value;
+                const nombre = document.getElementById('editColNombre').value;
+                const direccion = document.getElementById('editColDireccion').value;
+
+                let ok = true;
+
+                // 1. Actualizar Colaborador
+                if (colId) {
+                    const { error } = await supabase.from('colaboradores').update({ nombre, direccion }).eq('id', colId);
+                    if (error) { alert("Error al actualizar colaborador: " + error.message); ok = false; }
+                }
+
+                // 2. Actualizar Asignación
+                if (asiId && ok) {
+                    const asiData = {
+                        monitor_id: document.getElementById('editChkMonitor').checked ? document.getElementById('editIdMonitor').value : null,
+                        diadema_id: document.getElementById('editChkDiadema').checked ? document.getElementById('editIdDiadema').value : null,
+                        bocinas_id: document.getElementById('editChkBocinas').checked ? document.getElementById('editIdBocinas').value : null,
+                        teclado_mouse: document.getElementById('editChkTeclado').checked,
+                        hub_usb: document.getElementById('editChkHub').checked,
+                        base_refrigerante: document.getElementById('editChkBase').checked,
+                        bolso: document.getElementById('editChkBolso').checked
+                    };
+                    const { error } = await supabase.from('asignaciones').update(asiData).eq('id', asiId);
+                    if (!error) {
+                        await window.logAction('MODIFICAR_ACCESORIOS', 'Varios', `Actualizado para: ${nombre}`);
+                    } else {
+                        alert("Error al actualizar accesorios: " + error.message);
+                        ok = false;
+                    }
+                }
+
+                if (ok) {
+                    window.closeModal('colaboradorDetalleModal');
+                    await loadData();
+                }
+            };
+
             const org = document.getElementById("origen"), gen = document.getElementById("codigoGenerado"), num = document.getElementById("numeroRentado"), nom = document.getElementById("nombreBase");
-            const up = () => { if(org.value==='Rentado'){ document.getElementById("rentadoFields").classList.remove("hidden"); document.getElementById("corporativoFields").classList.add("hidden"); gen.value='LAPTOP-DA-RE-'+(num.value||""); } else { document.getElementById("corporativoFields").classList.remove("hidden"); document.getElementById("rentadoFields").classList.add("hidden"); gen.value=(nom.value||"").toUpperCase().replace(/\s+/g,'-'); } };
+            const up = () => {
+                if (org.value === 'Rentado') {
+                    document.getElementById("rentadoFields").classList.remove("hidden");
+                    document.getElementById("corporativoFields").classList.add("hidden");
+                    const ec = document.getElementById("extraCamposCorporativos");
+                    if (ec) ec.classList.add("hidden");
+                    gen.value = 'LAPTOP-DA-RE-' + (num.value || "");
+                } else {
+                    document.getElementById("corporativoFields").classList.remove("hidden");
+                    document.getElementById("rentadoFields").classList.add("hidden");
+                    const ec = document.getElementById("extraCamposCorporativos");
+                    if (ec) ec.classList.remove("hidden");
+                    gen.value = (nom.value || "").toUpperCase().replace(/\s+/g, '-');
+                }
+            };
             org.onchange = up; num.oninput = up; nom.oninput = up; up();
-            
+
             document.getElementById("equipoForm").onsubmit = async (e) => {
-                e.preventDefault(); 
-                const d = { codigo:gen.value, tipo:document.getElementById("tipo").value, origen:org.value, marca:document.getElementById("marca").value, modelo:document.getElementById("modelo").value, serial:document.getElementById("serial").value, estado:"Bueno" }; 
-                const { error } = await supabase.from('equipos').insert([d]); 
-                if(!error){ await window.logAction('CREACION_EQUIPO', d.codigo, d.tipo, { tipo: d.tipo, serial: d.serial, estado_ant: 'NUEVO', estado_nue: 'DISPONIBLE' }); location.reload(); } 
+                e.preventDefault();
+                const d = {
+                    codigo: gen.value,
+                    tipo: document.getElementById("tipo").value,
+                    origen: org.value,
+                    marca: document.getElementById("marca").value,
+                    modelo: document.getElementById("modelo").value,
+                    serial: document.getElementById("serial").value,
+                    referencia: document.getElementById("referencia").value,
+                    ciudad: document.getElementById("ciudad").value,
+                    proceso: document.getElementById("proceso").value,
+                    fecha_compra: document.getElementById("fechaCompra").value,
+                    estado: "Bueno"
+                };
+                const { error } = await supabase.from('equipos').insert([d]);
+                if (!error) { await window.logAction('CREACION_EQUIPO', d.codigo, d.tipo, { tipo: d.tipo, serial: d.serial, estado_ant: 'NUEVO', estado_nue: 'DISPONIBLE' }); location.reload(); }
                 else { alert("Error al crear equipo: " + error.message); }
             };
         })();
     </script>
 </body>
+
 </html>

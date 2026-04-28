@@ -462,5 +462,5 @@ td {
     transition: background-color 0.2s ease;
 }
 .clickable-row:hover {
-    background-color: #fff1ee;
+    background-color: rgba(255, 107, 87, 0.1);
 }
