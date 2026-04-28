@@ -173,7 +173,7 @@
                     colaborador: meta.colaborador || null,
                     estado_anterior: meta.estado_ant || null,
                     estado_nuevo: meta.estado_nue || null
-                }]);
+                }]).then(({error}) => { if (error) console.error("Error en logAction:", error); });
             };
 
             // EXPORTACIÓN CSV
@@ -229,7 +229,7 @@
                     render("recentEquipos", eq.slice(0,5), e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td></tr>`);
                     render("movimientosList", mov.slice(0,5), m => `<tr><td>${new Date(m.created_at).toLocaleDateString()}</td><td>${m.accion}</td><td>${m.realizado_por}</td></tr>`);
                     render("equiposList", eq, e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td><td>${e.modelo}</td><td>${e.serial}</td><td>${e.asignado_a || '-'}</td></tr>`);
-                    render("asignacionesList", asi, a => `<tr><td>${a.colaborador}</td><td>${a.equipo}</td><td>${new Date(a.fecha_asignacion).toLocaleDateString()}</td><td>${a.monitor_id?'🖥️':''} ${a.diadema_id?'🎧':''}</td></tr>`);
+                    render("asignacionesList", asi, a => `<tr><td>${a.colaborador}</td><td>${a.equipo}</td><td>${new Date(a.fecha_asignacion || a.created_at).toLocaleDateString()}</td><td>${a.monitor_id?'🖥️':''} ${a.diadema_id?'🎧':''}</td></tr>`);
                     render("colaboradoresList", col, c => `<tr><td>${c.nombre}</td><td>${c.cargo}</td><td>${c.area}</td><td>${c.correo}</td></tr>`);
                     
                     // HISTORIAL FULL
@@ -261,7 +261,7 @@
                     const listB = document.getElementById("datalistMarcas"), listM = document.getElementById("datalistModelos");
                     if(listB) listB.innerHTML = uniqueBrands.map(b => `<option value="${b}">`).join('');
                     if(listM) listM.innerHTML = uniqueModels.map(m => `<option value="${m}">`).join('');
-                } catch(e) {}
+                } catch(e) { console.error("Error cargando datos:", e); alert("Error cargando datos: " + e.message); }
             }
 
             // EVENTOS DE FORMULARIO
@@ -283,6 +283,7 @@
                 const d = { nombre:document.getElementById("colNombre").value, cargo:document.getElementById("colCargo").value, area:document.getElementById("colArea").value, correo:document.getElementById("colCorreo").value };
                 const { error } = await supabase.from('colaboradores').insert([d]);
                 if(!error) { await window.logAction('CREAR_COLABORADOR', null, d.nombre, { colaborador: d.nombre }); location.reload(); }
+                else { alert("Error al crear colaborador: " + error.message); }
             };
 
             document.getElementById("asignacionForm").onsubmit = async (e) => {
@@ -293,7 +294,7 @@
                     await supabase.from('equipos').update({ asignado_a:col }).eq('codigo', eq);
                     await window.logAction('ASIGNACION', eq, `Asignado a: ${col}`, { colaborador: col, estado_ant: 'DISPONIBLE', estado_nue: 'ASIGNADO' });
                     location.reload();
-                }
+                } else { alert("Error al asignar: " + error.message); }
             };
 
             const org = document.getElementById("origen"), gen = document.getElementById("codigoGenerado"), num = document.getElementById("numeroRentado"), nom = document.getElementById("nombreBase");
@@ -305,6 +306,7 @@
                 const d = { codigo:gen.value, tipo:document.getElementById("tipo").value, origen:org.value, marca:document.getElementById("marca").value, modelo:document.getElementById("modelo").value, serial:document.getElementById("serial").value, estado:"Bueno" }; 
                 const { error } = await supabase.from('equipos').insert([d]); 
                 if(!error){ await window.logAction('CREACION_EQUIPO', d.codigo, d.tipo, { tipo: d.tipo, serial: d.serial, estado_ant: 'NUEVO', estado_nue: 'DISPONIBLE' }); location.reload(); } 
+                else { alert("Error al crear equipo: " + error.message); }
             };
         })();
     </script>
