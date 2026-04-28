@@ -72,9 +72,16 @@
 
             <!-- VISTA HISTORIAL MAESTRO -->
             <section id="historialView" class="view">
-                <div class="topbar">
+                <div class="topbar" style="flex-wrap: wrap; gap: 10px; align-items: center;">
                     <h3>Registro Histórico Detallado</h3>
-                    <button class="btn-csv" onclick="window.exportToCSV()">📊 Descargar CSV (Excel)</button>
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <label style="font-size:12px; color:#6b7280; margin:0;">Desde:</label>
+                        <input type="date" id="historialDesde" style="width:auto; padding:6px 10px; margin:0;">
+                        <label style="font-size:12px; color:#6b7280; margin:0;">Hasta:</label>
+                        <input type="date" id="historialHasta" style="width:auto; padding:6px 10px; margin:0;">
+                        <button class="btn-primary" style="margin:0; padding:8px 12px; background:#1e293b;" onclick="window.filtrarHistorial()">Filtrar</button>
+                        <button class="btn-csv" style="margin:0; padding:8px 12px;" onclick="window.exportToCSV()">📊 Descargar CSV</button>
+                    </div>
                 </div>
                 <div class="card table-container">
                     <table style="min-width: 1200px;">
@@ -175,7 +182,7 @@
                 await supabase.from('movimientos').insert([{
                     accion, equipo: ref, detalles: extraDetails, realizado_por: user,
                     tipo: finalTipo, serial: finalSerial
-                }]).then(({error}) => { if (error) console.error("Error guardando historial:", error); });
+                }]).then(({error}) => { if (error) alert("Error guardando historial: " + error.message); });
             };
 
             // EXPORTACIÓN CSV
@@ -241,20 +248,24 @@
                     render("colaboradoresList", col, c => `<tr><td>${c.nombre}</td><td>${c.cargo}</td><td>${c.area}</td><td>${c.correo}</td></tr>`);
                     
                     // HISTORIAL FULL
-                    render("historialFullList", mov, m => `
-                        <tr>
-                            <td>${new Date(m.created_at).toLocaleString()}</td>
-                            <td style="font-weight:bold; color:#ff6b57;">${m.accion}</td>
-                            <td>${m.equipo || '-'}</td>
-                            <td>${m.tipo || '-'}</td>
-                            <td>${m.serial || '-'}</td>
-                            <td>${m.colaborador || '-'}</td>
-                            <td>${m.realizado_por}</td>
-                            <td title="${m.detalles}">${m.detalles ? m.detalles.substring(0,25)+'...' : '-'}</td>
-                            <td style="color:#d94835;">${m.estado_anterior || '-'}</td>
-                            <td style="color:#107c10; font-weight:bold;">${m.estado_nuevo || '-'}</td>
-                        </tr>
-                    `);
+                    window.movimientosData = mov;
+                    window.renderHistorial = (datos) => {
+                        render("historialFullList", datos, m => `
+                            <tr>
+                                <td>${new Date(m.created_at).toLocaleString()}</td>
+                                <td style="font-weight:bold; color:#ff6b57;">${m.accion}</td>
+                                <td>${m.equipo || '-'}</td>
+                                <td>${m.tipo || '-'}</td>
+                                <td>${m.serial || '-'}</td>
+                                <td>${m.colaborador || '-'}</td>
+                                <td>${m.realizado_por}</td>
+                                <td title="${m.detalles}">${m.detalles ? m.detalles.substring(0,25)+'...' : '-'}</td>
+                                <td style="color:#d94835;">${m.estado_anterior || '-'}</td>
+                                <td style="color:#107c10; font-weight:bold;">${m.estado_nuevo || '-'}</td>
+                            </tr>
+                        `);
+                    };
+                    window.renderHistorial(mov);
 
                     const sel = document.getElementById("equipoAsignar");
                     if(sel) sel.innerHTML = '<option value="">Sel...</option>' + eq.filter(e=>!e.asignado_a).map(e=>`<option value="${e.codigo}">${e.codigo}</option>`).join('');
@@ -271,6 +282,24 @@
                     if(listM) listM.innerHTML = uniqueModels.map(m => `<option value="${m}">`).join('');
                 } catch(e) { console.error("Error cargando datos:", e); alert("Error cargando datos: " + e.message); }
             }
+
+            window.filtrarHistorial = () => {
+                const desde = document.getElementById('historialDesde').value;
+                const hasta = document.getElementById('historialHasta').value;
+                let filtrados = window.movimientosData || [];
+                
+                if (desde) {
+                    const d = new Date(desde);
+                    d.setHours(0,0,0,0);
+                    filtrados = filtrados.filter(m => new Date(m.created_at) >= d);
+                }
+                if (hasta) {
+                    const h = new Date(hasta);
+                    h.setHours(23,59,59,999);
+                    filtrados = filtrados.filter(m => new Date(m.created_at) <= h);
+                }
+                window.renderHistorial(filtrados);
+            };
 
             // EVENTOS DE FORMULARIO
             window.restablecer = async (em) => { if(confirm("Reset clave?")){ await supabase.auth.resetPasswordForEmail(em); await window.logAction('RESET_PASS', em, 'Solicitud enviada'); alert("Ok"); } };
