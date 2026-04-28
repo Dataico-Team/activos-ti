@@ -318,7 +318,7 @@
                 }
 
                 const { error } = await supabase.from(tabla).delete().eq(columna, idValor);
-                if (!error) location.reload();
+                if (!error) await loadData();
                 else alert("Error al eliminar: " + error.message);
             };
 
@@ -340,7 +340,12 @@
                 e.preventDefault();
                 const d = { nombre:document.getElementById("colNombre").value, cargo:document.getElementById("colCargo").value, area:document.getElementById("colArea").value, correo:document.getElementById("colCorreo").value };
                 const { error } = await supabase.from('colaboradores').insert([d]);
-                if(!error) { await window.logAction('CREAR_COLABORADOR', null, d.nombre, { colaborador: d.nombre }); location.reload(); }
+                if(!error) { 
+                    await window.logAction('CREAR_COLABORADOR', null, d.nombre, { colaborador: d.nombre }); 
+                    window.closeModal('colaboradorModal');
+                    e.target.reset();
+                    await loadData();
+                }
                 else { alert("Error al crear colaborador: " + error.message); }
             };
 
@@ -351,7 +356,9 @@
                 if(!error) {
                     await supabase.from('equipos').update({ asignado_a:col }).eq('codigo', eq);
                     await window.logAction('ASIGNACION', eq, `Asignado a: ${col}`, { colaborador: col, estado_ant: 'DISPONIBLE', estado_nue: 'ASIGNADO' });
-                    location.reload();
+                    window.closeModal('asignacionModal');
+                    e.target.reset();
+                    await loadData();
                 } else { alert("Error al asignar: " + error.message); }
             };
 
