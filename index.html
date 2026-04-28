@@ -173,7 +173,7 @@
                     colaborador: meta.colaborador || null,
                     estado_anterior: meta.estado_ant || null,
                     estado_nuevo: meta.estado_nue || null
-                }]).then(({error}) => { if (error) console.error("Error en logAction:", error); });
+                }]).then(({error}) => { if (error) alert("Error guardando historial: " + error.message); });
             };
 
             // EXPORTACIÓN CSV
@@ -218,7 +218,7 @@
                     const [rE, rC, rA, rM, rP] = await Promise.all([
                         supabase.from('equipos').select('*').order('created_at', {ascending:false}),
                         supabase.from('colaboradores').select('*').order('created_at', {ascending:false}),
-                        supabase.from('asignaciones').select('*').order('created_at', {ascending:false}),
+                        supabase.from('asignaciones').select('*').order('fecha_asignacion', {ascending:false}),
                         supabase.from('movimientos').select('*').order('created_at', {ascending:false}),
                         supabase.from('perfiles').select('*').order('email', {ascending:true})
                     ]);
