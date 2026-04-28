@@ -244,7 +244,7 @@
                     render("equiposList", eq, e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td><td>${e.modelo}</td><td>${e.serial}</td><td>${e.asignado_a || '-'}</td><td><button onclick="window.eliminarRegistro('equipos', 'codigo', '${e.codigo}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
                     render("asignacionesList", asi, a => `<tr><td>${a.colaborador}</td><td>${a.equipo}</td><td>${new Date(a.fecha_asignacion || a.created_at).toLocaleDateString()}</td><td>${a.monitor_id?'🖥️':''} ${a.diadema_id?'🎧':''}</td><td><button onclick="window.eliminarRegistro('asignaciones', 'id', '${a.id}', '${a.equipo}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
                     render("colaboradoresList", col, c => `<tr><td>${c.nombre}</td><td>${c.cargo}</td><td>${c.area}</td><td>${c.correo}</td><td><button onclick="window.eliminarRegistro('colaboradores', 'id', '${c.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
-                    render("usuariosList", perf, p => `<tr><td>${p.usuario || '-'}</td><td>${p.email}</td><td><span style="padding:2px 8px; border-radius:12px; font-size:11px; font-weight:bold; background:${p.es_super_admin?'#107c10':'#d94835'}; color:white;">${p.es_super_admin?'Admin Master':'Estándar'}</span></td><td><button onclick="window.eliminarRegistro('perfiles', 'id', '${p.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
+                    render("usuariosList", perf, p => `<tr><td>${p.usuario || '-'}</td><td>${p.email}</td><td><span style="padding:2px 8px; border-radius:12px; font-size:11px; font-weight:bold; background:${p.es_super_admin?'#107c10':'#d94835'}; color:white;">${p.es_super_admin?'Admin Master':'Estándar'}</span></td><td><button onclick="window.restablecer('${p.email}')" style="background:transparent;border:none;cursor:pointer;margin-right:8px;" title="Enviar correo de recuperación">🔑</button><button onclick="window.eliminarRegistro('perfiles', 'id', '${p.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
                     
                     // HISTORIAL FULL
                     window.movimientosData = mov;
@@ -324,7 +324,13 @@
             };
 
             // EVENTOS DE FORMULARIO
-            window.restablecer = async (em) => { if(confirm("Reset clave?")){ await supabase.auth.resetPasswordForEmail(em); await window.logAction('RESET_PASS', em, 'Solicitud enviada'); alert("Ok"); } };
+            window.restablecer = async (em) => { 
+                if(confirm("¿Enviar correo de restablecimiento de contraseña a " + em + "?")) { 
+                    await supabase.auth.resetPasswordForEmail(em); 
+                    await window.logAction('RESET_PASS', em, 'Solicitud enviada'); 
+                    alert("Se ha enviado el correo de recuperación exitosamente."); 
+                } 
+            };
             
             document.getElementById('usuarioForm').onsubmit = async (e) => {
                 e.preventDefault();
