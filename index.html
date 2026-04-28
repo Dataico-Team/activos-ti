@@ -40,6 +40,7 @@
                 <div><h2 id="viewTitle">Dashboard</h2><p id="viewSubtitle">Trazabilidad de activos y periféricos</p></div>
                 <div class="user-box">
                     <span id="userEmailDisplay" style="font-weight:bold; margin-right:15px;">...</span>
+                    <button class="btn-primary admin-only" style="background:#107c10; margin-right:10px;" onclick="window.syncData()">🔄 Sincronizar</button>
                     <button class="btn-primary" style="background:#d94835; margin:0;" onclick="window.logout()">Salir</button>
                 </div>
             </header>
@@ -58,8 +59,44 @@
 
             <!-- VISTA EQUIPOS -->
             <section id="equiposView" class="view">
-                <div class="topbar"><h3>Inventario de Equipos</h3><button class="btn-primary" onclick="window.openModal('equipoModal')">+ Nuevo Equipo</button></div>
-                <div class="card"><table><thead><tr><th>Código</th><th>Tipo</th><th>Marca</th><th>Modelo</th><th>Serial</th><th>Asignado</th><th>Acciones</th></tr></thead><tbody id="equiposList"></tbody></table></div>
+                <div class="topbar">
+                    <h3>Inventario de Equipos</h3>
+                    <button class="btn-primary" onclick="window.openModal('equipoModal')">+ Nuevo Equipo</button>
+                </div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <label style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Buscar por Marca, Modelo o Serial:</label>
+                            <input type="text" id="filtroEquipoBusqueda" placeholder="Ej: Dell, Inspiron, SN123..." oninput="window.filtrarEquipos()">
+                        </div>
+                        <div style="width: 200px;">
+                            <label style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px; display: block;">Categoría (Origen):</label>
+                            <select id="filtroEquipoOrigen" onchange="window.filtrarEquipos()">
+                                <option value="">Todos</option>
+                                <option value="Propio">Propio</option>
+                                <option value="Corporativo">Corporativo</option>
+                                <option value="Rentado">Rentado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Tipo</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Serial</th>
+                                <th>Origen</th>
+                                <th>Asignado</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equiposList"></tbody>
+                    </table>
+                </div>
             </section>
 
             <!-- VISTA ASIGNACIONES -->
@@ -120,30 +157,153 @@
     </div>
 
     <!-- MODALES -->
-    <div id="equipoModal" class="modal hidden"><div class="modal-content"><span class="modal-close" onclick="window.closeModal('equipoModal')">&times;</span><h3>Registrar Equipo</h3><form id="equipoForm" class="form"><label>Tipo</label><select id="tipo"><option value="Laptop">Laptop</option><option value="Celular">Celular</option><option value="Diadema">Diadema</option><option value="Monitor">Monitor</option></select><label>Origen</label><select id="origen"><option value="Corporativo">Corporativo</option><option value="Rentado">Rentado</option><option value="Propio">Propio</option></select><div id="rentadoFields" class="hidden"><label>Consecutivo</label><input type="text" id="numeroRentado"></div><div id="corporativoFields"><label>Identificador</label><input type="text" id="nombreBase"></div><label>Código Final</label><input type="text" id="codigoGenerado" readonly><input type="text" id="marca" placeholder="Marca" list="datalistMarcas" required><input type="text" id="modelo" placeholder="Modelo" list="datalistModelos" required><input type="text" id="serial" placeholder="Serial" required><button type="submit" class="btn-primary">Guardar</button></form></div></div>
+    <!-- MODAL EQUIPO -->
+    <div id="equipoModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="modal-close" onclick="window.closeModal('equipoModal')">&times;</span>
+            <h3 style="margin-bottom: 24px;">Registrar Nuevo Equipo</h3>
+            <form id="equipoForm" class="form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Tipo de Activo</label>
+                        <select id="tipo">
+                            <option value="Laptop">Laptop</option>
+                            <option value="Celular">Celular</option>
+                            <option value="Diadema">Diadema</option>
+                            <option value="Monitor">Monitor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Origen</label>
+                        <select id="origen">
+                            <option value="Corporativo">Corporativo</option>
+                            <option value="Rentado">Rentado</option>
+                            <option value="Propio">Propio</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="rentadoFields" class="hidden">
+                    <label>Consecutivo (Ej: 14)</label>
+                    <input type="text" id="numeroRentado" placeholder="Número de equipo">
+                </div>
+                <div id="corporativoFields">
+                    <label>Identificador de Equipo</label>
+                    <input type="text" id="nombreBase" placeholder="Ej: LAPTOP-ADMIN-01">
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
+                    <label style="font-size: 11px; color: var(--primary); text-transform: uppercase; margin-bottom: 4px;">Código Final Generado:</label>
+                    <input type="text" id="codigoGenerado" readonly style="background: transparent; border: none; font-weight: 700; font-size: 18px; color: white; padding: 0;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <input type="text" id="marca" placeholder="Marca" list="datalistMarcas" required>
+                    <input type="text" id="modelo" placeholder="Modelo" list="datalistModelos" required>
+                </div>
+                <input type="text" id="serial" placeholder="Serial o S/N" required>
+                
+                <button type="submit" class="btn-primary" style="margin-top: 10px;">Guardar Equipo</button>
+            </form>
+        </div>
+    </div>
     
     <datalist id="datalistMarcas"></datalist>
     <datalist id="datalistModelos"></datalist>
 
-    <div id="asignacionModal" class="modal hidden"><div class="modal-content"><span class="modal-close" onclick="window.closeModal('asignacionModal')">&times;</span><h3>Asignación de Activo</h3><form id="asignacionForm" class="form"><label>Colaborador</label><select id="colaborador" required></select><label>Equipo</label><select id="equipoAsignar" required></select><div class="checks" style="display:grid; grid-template-columns:1fr 1fr;"><label><input type="checkbox" id="chkMonitor"> Monitor</label><label><input type="checkbox" id="chkDiadema"> Diadema</label></div><div id="monitorInput" class="hidden"><label>ID Monitor</label><input type="text" id="idMonitor"></div><div id="diademaInput" class="hidden"><label>ID Diadema</label><input type="text" id="idDiadema"></div><button type="submit" class="btn-primary" style="width:100%;">Confirmar Entrega</button></form></div></div>
+    <!-- MODAL ASIGNACION -->
+    <div id="asignacionModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close" onclick="window.closeModal('asignacionModal')">&times;</span>
+            <h3 style="margin-bottom: 24px;">Asignación de Activo</h3>
+            <form id="asignacionForm" class="form">
+                <label>Seleccionar Colaborador</label>
+                <select id="colaborador" required></select>
+                
+                <label>Seleccionar Equipo Disponible</label>
+                <select id="equipoAsignar" required></select>
 
-    <div id="colaboradorModal" class="modal hidden"><div class="modal-content"><span class="modal-close" onclick="window.closeModal('colaboradorModal')">&times;</span><h3>Nuevo Colaborador</h3><form id="colaboradorForm" class="form"><input type="text" id="colNombre" placeholder="Nombre" required><input type="text" id="colCargo" placeholder="Cargo" required><input type="text" id="colArea" placeholder="Area" required><input type="email" id="colCorreo" placeholder="Correo" required><button type="submit" class="btn-primary">Registrar</button><button type="button" class="btn-primary" style="background:#6b7280; margin-top:5px;" onclick="window.closeModal('colaboradorModal')">Cancelar</button></form></div></div>
+                <div class="checks">
+                    <span style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Accesorios Adicionales:</span>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="chkMonitor" style="width: 18px; height: 18px;"> Monitor
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="chkDiadema" style="width: 18px; height: 18px;"> Diadema
+                        </label>
+                    </div>
+                </div>
 
+                <div id="monitorInput" class="hidden">
+                    <label>ID / Serial Monitor</label>
+                    <input type="text" id="idMonitor" placeholder="Ej: MON-01">
+                </div>
+                <div id="diademaInput" class="hidden">
+                    <label>ID / Serial Diadema</label>
+                    <input type="text" id="idDiadema" placeholder="Ej: DIA-01">
+                </div>
+
+                <button type="submit" class="btn-primary" style="width:100%; margin-top: 15px;">Confirmar Entrega</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL COLABORADOR -->
+    <div id="colaboradorModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close" onclick="window.closeModal('colaboradorModal')">&times;</span>
+            <h3 style="margin-bottom: 24px;">Nuevo Colaborador</h3>
+            <form id="colaboradorForm" class="form">
+                <input type="text" id="colNombre" placeholder="Nombre Completo" required>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <input type="text" id="colCargo" placeholder="Cargo" required>
+                    <input type="text" id="colArea" placeholder="Área / Departamento" required>
+                </div>
+                <input type="email" id="colCorreo" placeholder="Correo Corporativo" required>
+                <button type="submit" class="btn-primary" style="margin-top: 10px;">Registrar Colaborador</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL USUARIO -->
     <div id="usuarioModal" class="modal hidden">
         <div class="modal-content">
             <span class="modal-close" onclick="window.closeModal('usuarioModal')">&times;</span>
-            <h3>Invitación de Usuario</h3>
+            <h3 style="margin-bottom: 24px;">Invitación de Usuario</h3>
             <form id="usuarioForm" class="form">
-                <input type="text" id="newUsername" placeholder="Username (opcional)">
-                <input type="email" id="newUserEmail" placeholder="Correo Electrónico" required>
-                <label><input type="checkbox" id="chkSuperAdmin"> Es Super Admin?</label>
-                <div id="tempPassBox" style="background:#f3f4f6; padding:10px; border-radius:8px; margin:10px 0;">
-                    <span style="font-size:11px;">Clave Temporal:</span>
-                    <div id="displayTempPass" style="font-weight:bold; font-size:18px; color:#ff6b57;">Dataico-XXXX</div>
-                    <button type="button" class="btn-primary" id="btnCopiarCreds" style="padding:4px 8px; font-size:11px; background:#4b5563;">📋 Copiar</button>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Username (opcional)</label>
+                        <input type="text" id="newUsername" placeholder="Nombre de usuario">
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px; display: block;">Correo Electrónico</label>
+                        <input type="email" id="newUserEmail" required placeholder="ejemplo@dataico.com">
+                    </div>
                 </div>
-                <button type="submit" class="btn-primary" style="width:100%;">Crear Acceso</button>
-                <button type="button" class="btn-primary" style="background:#6b7280; margin-top:5px;" onclick="window.closeModal('usuarioModal')">Cerrar</button>
+                
+                <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 16px; border: 1px solid var(--border); margin: 10px 0;">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="chkSuperAdmin" style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
+                        <span style="font-size: 15px; font-weight: 600;">¿Es Super Admin?</span>
+                    </label>
+                    <p style="font-size: 12px; color: var(--text-dim); margin: 8px 0 0 30px;">Los administradores pueden gestionar usuarios y configuraciones.</p>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 18px; border-radius: 16px; border: 1px solid var(--primary); margin-top: 10px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary);"></div>
+                    <span style="font-size: 11px; color: var(--primary); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Clave Temporal Generada</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                        <strong id="displayTempPass" style="font-size: 22px; color: var(--primary); font-family: monospace;">Dataico-XXXX</strong>
+                        <button type="button" class="btn-primary" id="btnCopiarCreds" style="padding: 6px 12px; font-size: 11px; background: rgba(255,255,255,0.1); box-shadow: none;">📋 Copiar</button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 24px;">
+                    <button type="submit" class="btn-primary">Crear Acceso</button>
+                    <button type="button" class="btn-primary" style="background: rgba(255,255,255,0.05); color: var(--text-dim); box-shadow: none;" onclick="window.closeModal('usuarioModal')">Cancelar</button>
+                </div>
             </form>
         </div>
     </div>
@@ -240,12 +400,16 @@
                     }
 
                     const eq = rE.data || [], col = rC.data || [], asi = rA.data || [], mov = rM.data || [], perf = rP.data || [];
+                    window.allEquipos = eq; // Guardar globalmente para filtros
+                    
                     document.getElementById("totalEquipos").textContent=eq.length; document.getElementById("disponibles").textContent=eq.filter(e=>!e.asignado_a).length; document.getElementById("asignadosCount").textContent=eq.filter(e=>e.asignado_a).length;
                     
                     const render = (id, d, f) => { const el = document.getElementById(id); if(el) el.innerHTML = d.map(f).join(''); };
                     render("recentEquipos", eq.slice(0,5), e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td></tr>`);
                     render("movimientosList", mov.slice(0,5), m => `<tr><td>${new Date(m.created_at).toLocaleDateString()}</td><td>${m.accion}</td><td>${m.realizado_por}</td></tr>`);
-                    render("equiposList", eq, e => `<tr><td>${e.codigo}</td><td>${e.tipo}</td><td>${e.marca}</td><td>${e.modelo}</td><td>${e.serial}</td><td>${e.asignado_a || '-'}</td><td><button onclick="window.eliminarRegistro('equipos', 'codigo', '${e.codigo}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
+                    
+                    window.filtrarEquipos(); // Render inicial de equipos con filtros
+                    
                     render("asignacionesList", asi, a => `<tr><td>${a.colaborador}</td><td>${a.equipo}</td><td>${new Date(a.fecha_asignacion || a.created_at).toLocaleDateString()}</td><td>${a.monitor_id?'🖥️':''} ${a.diadema_id?'🎧':''}</td><td><button onclick="window.eliminarRegistro('asignaciones', 'id', '${a.id}', '${a.equipo}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
                     render("colaboradoresList", col, c => `<tr><td>${c.nombre}</td><td>${c.cargo}</td><td>${c.area}</td><td>${c.correo}</td><td><button onclick="window.eliminarRegistro('colaboradores', 'id', '${c.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
                     render("usuariosList", perf, p => `<tr><td>${p.usuario || '-'}</td><td>${p.email}</td><td><span style="padding:2px 8px; border-radius:12px; font-size:11px; font-weight:bold; background:${p.es_super_admin?'#107c10':'#d94835'}; color:white;">${p.es_super_admin?'Admin Master':'Estándar'}</span></td><td><button onclick="window.restablecer('${p.email}')" style="background:transparent;border:none;cursor:pointer;margin-right:8px;" title="Enviar correo de recuperación">🔑</button><button onclick="window.eliminarRegistro('perfiles', 'id', '${p.id}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button></td></tr>`);
@@ -286,6 +450,40 @@
                 } catch(e) { console.error("Error cargando datos:", e); alert("Error cargando datos: " + e.message); }
             }
 
+            window.filtrarEquipos = () => {
+                const busqueda = document.getElementById('filtroEquipoBusqueda').value.toLowerCase();
+                const origen = document.getElementById('filtroEquipoOrigen').value;
+                
+                let filtrados = window.allEquipos.filter(e => {
+                    const matchBusqueda = !busqueda || 
+                        (e.marca || '').toLowerCase().includes(busqueda) || 
+                        (e.modelo || '').toLowerCase().includes(busqueda) || 
+                        (e.serial || '').toLowerCase().includes(busqueda) ||
+                        (e.codigo || '').toLowerCase().includes(busqueda);
+                    const matchOrigen = !origen || e.origen === origen;
+                    return matchBusqueda && matchOrigen;
+                });
+
+                // Ordenar por Código por defecto (para que 01 esté arriba)
+                filtrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, {numeric: true, sensitivity: 'base'}));
+
+                const el = document.getElementById("equiposList");
+                if(el) el.innerHTML = filtrados.map(e => `
+                    <tr>
+                        <td>${e.codigo}</td>
+                        <td>${e.tipo}</td>
+                        <td>${e.marca}</td>
+                        <td>${e.modelo}</td>
+                        <td>${e.serial}</td>
+                        <td><span style="font-size:11px; padding:3px 8px; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid var(--border);">${e.origen || 'Propio'}</span></td>
+                        <td>${e.asignado_a || '-'}</td>
+                        <td style="text-align: center;">
+                            <button onclick="window.eliminarRegistro('equipos', 'codigo', '${e.codigo}')" style="background:transparent;border:none;cursor:pointer;" title="Eliminar">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+            };
+
             window.filtrarHistorial = () => {
                 const desde = document.getElementById('historialDesde').value;
                 const hasta = document.getElementById('historialHasta').value;
@@ -302,6 +500,17 @@
                     filtrados = filtrados.filter(m => new Date(m.created_at) <= h);
                 }
                 window.renderHistorial(filtrados);
+            };
+
+            window.syncData = async () => {
+                const codigos = ['LAPTOP-DA-RE-01', 'LAPTOP-DA-RE-04', 'LAPTOP-DA-RE-06'];
+                let count = 0;
+                for(let c of codigos) {
+                    const { error } = await supabase.from('equipos').update({ asignado_a: null }).eq('codigo', c);
+                    if(!error) count++;
+                }
+                alert(`¡Sincronización completada! ${count} equipos liberados.`);
+                await loadData();
             };
 
             window.eliminarRegistro = async (tabla, columna, idValor, extraParam = null) => {
